@@ -92,7 +92,7 @@ public class SamplePerformanceTest {
     private static final JsonBenchmarkConsumer JSON_BENCHMARK_CONSUMER = new JsonBenchmarkConsumer(
             Paths.get("target/site/perf/sample-performance-test.json"));
 
-    private static final long ITERATIONS = 100000000L;
+    private static final long ITERATIONS = 10000L;
 
     private static final class TestClass {
 
