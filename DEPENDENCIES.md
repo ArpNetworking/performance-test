@@ -11,6 +11,7 @@ Project                        | License                    | Project link
 Arp Networking Build Resources | Apache License 2           | https://github.com/ArpNetworking/build-resources
 Arp Networking Parent Pom      | Apache License 2           | https://github.com/ArpNetworking/arpnetworking-parent-pom
 Checkstyle                     | LGPL 2                     | http://checkstyle.sourceforge.net/
+FindBugs                       | LGPL                       | http://findbugs.sourceforge.net/
 Hamcrest                       | BSD 3                      | https://github.com/hamcrest/JavaHamcrest/
 Jacoco                         | Eclipse Public License 1.0 | http://www.eclemma.org/jacoco/
 jUnit                          | Eclipse Public License 1.0 | https://github.com/junit-team/junit/
