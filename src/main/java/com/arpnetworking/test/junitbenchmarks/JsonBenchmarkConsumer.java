@@ -73,9 +73,6 @@ public class JsonBenchmarkConsumer extends AutocloseConsumer implements Closeabl
         addAutoclose(this);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void accept(final Result result) throws IOException {
         if (_closed) {
@@ -91,9 +88,6 @@ public class JsonBenchmarkConsumer extends AutocloseConsumer implements Closeabl
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void close() {
         if (!_closed) {
