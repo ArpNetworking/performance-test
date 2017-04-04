@@ -29,9 +29,6 @@ import java.io.IOException;
  */
 public class GCSnapshotSerializer extends JsonSerializer<GCSnapshot> {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void serialize(
             final GCSnapshot value,
