@@ -21,7 +21,7 @@ Setup
 
 ### Add Dependency
 
-Determine the latest version of the performance test in [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.arpnetworking.metrics%22%20a%3A%22jvm-extra%22).
+Determine the latest version of the performance test in [Maven Central](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.arpnetworking.test%22%20a%3A%22performance-test%22).
 
 #### Maven
 
@@ -29,8 +29,8 @@ Add a dependency to your pom:
 
 ```xml
 <dependency>
-    <groupId>com.arpnetworking.metrics.extras</groupId>
-    <artifactId>jvm-extra</artifactId>
+    <groupId>com.arpnetworking.test</groupId>
+    <artifactId>performance-test</artifactId>
     <version>VERSION</version>
     <scope>test</scope>
 </dependency>
@@ -42,7 +42,7 @@ The Maven Central repository is included by default.
 
 Add a dependency to your build.gradle:
 
-    testCompile group: 'com.arpnetworking.metrics.extras', name: 'jvm-extra', version: 'VERSION'
+    testCompile group: 'com.arpnetworking.test', name: 'performance-test', version: 'VERSION'
 
 Add the Maven Central Repository into your *build.gradle*:
 
@@ -105,6 +105,7 @@ Next, in your pom.xml file define a profile for executing your performance tests
               <configuration>
                 <includes>
                   <include>**/*PerformanceTest.java</include>
+                  <include>**/*PT.java</include>
                 </includes>
                 <parallel combine.self="override" />
               </configuration>
@@ -119,7 +120,7 @@ Next, in your pom.xml file define a profile for executing your performance tests
 The key points in the profile are:
 
 * Overrides the default test configuration.
-* Executes only tests ending with _PerformanceTest.java_.
+* Executes only tests ending with _PerformanceTest.java_ or _PT.java_.
 * Ensures tests are executed serially.
 
 Finally, define your test methods and execute:
