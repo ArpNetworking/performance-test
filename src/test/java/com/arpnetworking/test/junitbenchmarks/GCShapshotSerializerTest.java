@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2014 Groupon.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +30,8 @@ import org.junit.Test;
  *
  * @author Brandon Arp (barp at groupon dot com)
  */
-public class GCShapshotSerializerTest {
+public final class GCShapshotSerializerTest {
+
     @Test
     public void testSerialization() {
         final SimpleModule module = new SimpleModule();

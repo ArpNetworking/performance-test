@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2014 Groupon.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,25 +21,33 @@ import com.carrotsearch.junitbenchmarks.Result;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.io.FileUtils;
+import com.google.common.base.Charsets;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.Description;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.time.Duration;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Tests a {@link JsonBenchmarkConsumer}.
  *
  * @author Brandon Arp (barp at groupon dot com)
  */
-public class JsonBenchmarkConsumerTest {
+public final class JsonBenchmarkConsumerTest {
+
     @Test
     public void testNormalBenchmarkCase() throws IOException {
         final Path path = Paths.get("target/tmp/test/testConsumer.json");
@@ -107,14 +115,22 @@ public class JsonBenchmarkConsumerTest {
 
     @Test
     public void testCreatesParentDirs() throws IOException {
-        final Path path = Paths.get("target/tmp/test/another/directory/testConsumerMultiClose.json");
-        path.toFile().deleteOnExit();
-        FileUtils.deleteDirectory(Paths.get("target/tmp/test/another").toFile());
-        final JsonBenchmarkConsumer consumer = new JsonBenchmarkConsumer(path);
+        final Path root = Paths.get("target/tmp/testCreatesParentDirs");
+        root.toFile().mkdirs();
 
+        final Path path = root.resolve("another/directory/testConsumerMultiClose.json");
+        path.toFile().deleteOnExit();
+        Files.walk(root)
+                .sorted(Comparator.reverseOrder())
+                .map(Path::toFile)
+                .forEach(File::delete);
+
+        final JsonBenchmarkConsumer consumer = new JsonBenchmarkConsumer(path);
         final Result result = DataCreator.createResult();
         consumer.accept(result);
         consumer.close();
+
+        Assert.assertTrue(Files.exists(Paths.get("target/tmp/testCreatesParentDirs/another/directory")));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -132,7 +148,7 @@ public class JsonBenchmarkConsumerTest {
     }
 
     @Test
-    public void testWriteInvalidFile() throws IOException {
+    public void testWriteInvalidFile() {
         final Path path = Paths.get("target/tmp/test/does_not_exist");
         final JsonBenchmarkConsumer consumer = new JsonBenchmarkConsumer(path);
 
@@ -172,17 +188,95 @@ public class JsonBenchmarkConsumerTest {
         Assert.assertFalse(profileFile.isPresent());
     }
 
-    private static final Result RESULT = new Result(
-            Description.createTestDescription(SamplePerformanceTest.class, "testNewInstance"),
-            2,
-            1,
-            1,
-            2,
-            null,
-            null,
-            null,
-            null,
-            1);
+    @Test
+    public void testGetProcessId() throws IOException {
+        final JsonBenchmarkConsumer consumer = new JsonBenchmarkConsumer(
+                Files.createTempFile("testGetProcessId", ".hprof"));
+
+        Assert.assertEquals(consumer.getProcessId(), consumer.getProcessId());
+    }
+
+    @Test
+    public void testGetFileSize() throws IOException {
+        final Path tmpFile = Files.createTempFile("testGetFileSize", ".tmp");
+        final String content = "This is the file content";
+        Files.write(tmpFile, content.getBytes(Charsets.UTF_8));
+
+        final JsonBenchmarkConsumer consumer = new JsonBenchmarkConsumer(
+                Files.createTempFile("testGetFileSize", ".hprof"));
+
+        final long fileSize = consumer.getFileSize(tmpFile);
+        Assert.assertEquals(content.getBytes(Charsets.UTF_8).length, fileSize);
+    }
+
+    @Test
+    public void testWaitForOutputWriteTimeout() throws IOException {
+        final Path tmpFile = Files.createTempFile("testWaitForOutputWriteTimeout", ".tmp");
+        Files.write(tmpFile, new byte[0]);
+
+        final JsonBenchmarkConsumer consumer = new JsonBenchmarkConsumer(
+                Files.createTempFile("testWaitForOutputTimeout", ".hprof"));
+
+        final long timeBefore = System.nanoTime();
+        consumer.waitForOutput(tmpFile, Duration.ofMillis(1100), Duration.ofMillis(2000), Duration.ofMillis(100));
+        final long timeAfter = System.nanoTime();
+
+        // The write timeout should have been exhausted
+        Assert.assertTrue(timeAfter - timeBefore > 1000);
+    }
+
+    @Test
+    public void testWaitForOutputTotalTimeout() throws IOException {
+        final Path tmpFile = Files.createTempFile("testWaitForOutputTotalTimeout", ".tmp");
+        Files.write(tmpFile, new byte[0]);
+
+        final JsonBenchmarkConsumer consumer = new JsonBenchmarkConsumer(
+                Files.createTempFile("testWaitForOutputTotalTimeout", ".hprof"));
+
+        final long timeBefore = System.nanoTime();
+        consumer.waitForOutput(tmpFile, Duration.ofMillis(2000), Duration.ofMillis(1100), Duration.ofMillis(100));
+        final long timeAfter = System.nanoTime();
+
+        // The write timeout should have been exhausted
+        Assert.assertTrue(timeAfter - timeBefore > 1000);
+    }
+
+    @Test
+    public void testWaitForOutputTotalTimeoutWhileWriting() throws IOException, InterruptedException {
+        final Path tmpFile = Files.createTempFile("testWaitForOutputTotalTimeoutWhileWriting", ".tmp");
+        final ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Files.write(tmpFile, new byte[0]);
+
+        executorService.submit(() -> {
+            final StringBuilder stringBuilder = new StringBuilder();
+            for (int i = 0; i < 6; ++i) {
+
+                try {
+                    Thread.sleep(200);
+                    stringBuilder.append("x");
+                    Files.write(
+                            tmpFile,
+                            stringBuilder.toString().getBytes(Charset.defaultCharset()),
+                            StandardOpenOption.APPEND);
+                } catch (final IOException | InterruptedException e) {
+                    return;
+                }
+            }
+        });
+
+        final JsonBenchmarkConsumer consumer = new JsonBenchmarkConsumer(
+                Files.createTempFile("testWaitForOutputTotalTimeoutWhileWriting", ".hprof"));
+
+        final long timeBefore = System.nanoTime();
+        consumer.waitForOutput(tmpFile, Duration.ofMillis(400), Duration.ofMillis(1100), Duration.ofMillis(100));
+        final long timeAfter = System.nanoTime();
+
+        // The total timeout should have been exhausted
+        Assert.assertTrue(timeAfter - timeBefore > 1000);
+
+        executorService.shutdown();
+        executorService.awaitTermination(500, TimeUnit.MILLISECONDS);
+    }
 
     private static class CustomBenchmarkConsumer extends JsonBenchmarkConsumer {
         CustomBenchmarkConsumer(final String argument) {

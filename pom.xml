@@ -18,7 +18,7 @@
   <parent>
     <groupId>com.arpnetworking.build</groupId>
     <artifactId>arpnetworking-parent-pom</artifactId>
-    <version>1.0.31</version>
+    <version>1.1.9-SNAPSHOT</version>
     <relativePath />
   </parent>
 
@@ -67,22 +67,28 @@
 
   <properties>
     <!--Dependency versions-->
-    <cglib.version>3.2.1</cglib.version>
-    <arpnetworking.commons.version>1.9.0</arpnetworking.commons.version>
-    <commons.io.version>1.3.2</commons.io.version>
-    <guava.version>19.0</guava.version>
+    <ant.version>1.9.6</ant.version>
+    <arpnetworking.commons.version>1.17.0</arpnetworking.commons.version>
+    <cglib.version>3.2.6</cglib.version>
+    <commons.compress.version>1.18</commons.compress.version>
+    <docker.client.version>8.14.5</docker.client.version>
+    <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
+    <guava.version>25.1-jre</guava.version>
     <hamcrest.version>2.0.0.0</hamcrest.version>
-    <jackson.version>2.7.3</jackson.version>
+    <jackson.version>2.9.6</jackson.version>
+    <jsr305.version>3.0.2</jsr305.version>
     <junit.version>4.12</junit.version>
     <junit.benchmarks.version>0.7.2</junit.benchmarks.version>
-    <slf4j.version>1.7.12</slf4j.version>
+    <logback.version>1.2.3</logback.version>
+    <mockito.version>2.23.4</mockito.version>
+    <slf4j.version>1.7.25</slf4j.version>
 
     <!-- Findbugs -->
     <findbugs.exclude>${project.basedir}/findbugs.exclude.xml</findbugs.exclude>
 
     <!-- Code Coverage -->
     <jacoco.check.line.coverage>0.75</jacoco.check.line.coverage>
-    <jacoco.check.branch.coverage>0.60</jacoco.check.branch.coverage>
+    <jacoco.check.branch.coverage>0.80</jacoco.check.branch.coverage>
   </properties>
 
   <build>
@@ -151,6 +157,17 @@
     </dependency>
     <!-- General -->
     <dependency>
+      <groupId>com.spotify</groupId>
+      <artifactId>docker-client</artifactId>
+      <classifier>shaded</classifier>
+      <version>${docker.client.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>${commons.compress.version}</version>
+    </dependency>
+    <dependency>
       <groupId>cglib</groupId>
       <artifactId>cglib</artifactId>
       <version>${cglib.version}</version>
@@ -162,14 +179,19 @@
       <version>${arpnetworking.commons.version}</version>
     </dependency>
     <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>${commons.io.version}</version>
-    </dependency>
-    <dependency>
       <groupId>com.carrotsearch</groupId>
       <artifactId>junit-benchmarks</artifactId>
       <version>${junit.benchmarks.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+      <version>${jsr305.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>findbugs-annotations</artifactId>
+      <version>${findbugs.annotations.version}</version>
     </dependency>
     <!-- Test - General -->
     <dependency>
@@ -184,10 +206,28 @@
       <version>${hamcrest.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ant</groupId>
+      <artifactId>ant</artifactId>
+      <version>${ant.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>${logback.version}</version>
+        <scope>test</scope>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>
-      <id>performanceTest</id>
+      <id>unitPerformanceTest</id>
       <activation>
         <activeByDefault>false</activeByDefault>
       </activation>
@@ -199,22 +239,15 @@
             <executions>
               <execution>
                 <id>default-test</id>
-                <phase>test</phase>
-                <goals>
-                  <goal>test</goal>
-                </goals>
                 <configuration>
                   <includes>
-                    <include>**/*PerformanceTest.java</include>
+                    <include>**/*TestPerf.java</include>
                   </includes>
-                  <systemPropertyVariables>
-                    <logback.configurationFile>${basedir}/src/test/resources/logback-perf.xml</logback.configurationFile>
-                  </systemPropertyVariables>
                   <parallel combine.self="override" />
                   <forkMode>always</forkMode>
                   <forkCount>1</forkCount>
                   <reuseForks>false</reuseForks>
-                  <argLine combine.self="override">${argLine} -Xms512m -ea -Duser.timezone="UTC" -agentlib:hprof=cpu=samples,depth=15,interval=10,force=y,verbose=y,doe=n,file=${basedir}/target/perf.profile.hprof.txt</argLine>
+                  <argLine combine.self="override">${argLine} -Xms512m -ea -Duser.timezone="UTC" -agentlib:hprof=cpu=samples,depth=20,interval=1,force=y,verbose=y,doe=n,file=${basedir}/target/perf.unit.hprof.txt</argLine>
                 </configuration>
               </execution>
             </executions>

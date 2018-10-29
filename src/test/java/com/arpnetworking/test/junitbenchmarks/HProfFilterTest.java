@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2014 Groupon.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,10 +16,13 @@
 package com.arpnetworking.test.junitbenchmarks;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Maps;
 import com.google.common.io.Resources;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -27,6 +30,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -34,7 +38,8 @@ import java.util.Optional;
  *
  * @author Brandon Arp (barp at groupon dot com)
  */
-public class HProfFilterTest {
+public final class HProfFilterTest {
+
     @Test
     public void regress() throws IOException {
         // Copy the resource to a real place
@@ -47,8 +52,8 @@ public class HProfFilterTest {
         final Path filteredPath = tmp.resolve(filteredFile);
         final Path inputPath = tmp.resolve(inputFile);
         Resources.copy(Resources.getResource(inputFile.toString()), new FileOutputStream(inputPath.toFile()));
-        final HProfFilter filter = new HProfFilter(inputPath, Optional.empty(), Optional.of(0));
-        filter.run();
+        final HProfFilter filter = new HProfFilter();
+        filter.run(inputPath, Optional.empty(), Optional.of(0));
 
         Resources.copy(Resources.getResource(filteredFile.toString()), new FileOutputStream(referencePath.toFile()));
         final List<String> reference = Files.readAllLines(referencePath, Charsets.UTF_8);
@@ -67,8 +72,8 @@ public class HProfFilterTest {
         Files.createDirectories(tmp);
         final Path inputFile = Paths.get("profile.doesnotexist.hprof.txt");
         final Path inputPath = tmp.resolve(inputFile);
-        final HProfFilter filter = new HProfFilter(inputPath, Optional.empty(), Optional.of(0));
-        filter.run();
+        final HProfFilter filter = new HProfFilter();
+        filter.run(inputPath, Optional.empty(), Optional.of(0));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -79,8 +84,8 @@ public class HProfFilterTest {
         final Path inputFile = Paths.get("profile.hprof.invalidSample.txt");
         final Path inputPath = tmp.resolve(inputFile);
         Resources.copy(Resources.getResource(inputFile.toString()), new FileOutputStream(inputPath.toFile()));
-        final HProfFilter filter = new HProfFilter(inputPath, Optional.empty(), Optional.of(0));
-        filter.run();
+        final HProfFilter filter = new HProfFilter();
+        filter.run(inputPath, Optional.empty(), Optional.of(0));
     }
 
     @Test
@@ -95,8 +100,8 @@ public class HProfFilterTest {
         final Path filteredPath = tmp.resolve(filteredFile);
         final Path inputPath = tmp.resolve(inputFile);
         Resources.copy(Resources.getResource(inputFile.toString()), new FileOutputStream(inputPath.toFile()));
-        final HProfFilter filter = new HProfFilter(inputPath, Optional.empty(), Optional.of(0));
-        filter.run();
+        final HProfFilter filter = new HProfFilter();
+        filter.run(inputPath, Optional.empty(), Optional.of(0));
 
         Resources.copy(Resources.getResource(filteredFile.toString()), new FileOutputStream(referencePath.toFile()));
         final List<String> reference = Files.readAllLines(referencePath, Charsets.UTF_8);
@@ -125,8 +130,8 @@ public class HProfFilterTest {
         final Path inputFile = Paths.get("profile.hprof.badTrace.txt");
         final Path inputPath = tmp.resolve(inputFile);
         Resources.copy(Resources.getResource(inputFile.toString()), new FileOutputStream(inputPath.toFile()));
-        final HProfFilter filter = new HProfFilter(inputPath, Optional.empty(), Optional.of(0));
-        filter.run();
+        final HProfFilter filter = new HProfFilter();
+        filter.run(inputPath, Optional.empty(), Optional.of(0));
     }
 
     @Test
@@ -139,8 +144,8 @@ public class HProfFilterTest {
         final Path filteredPath = tmp.resolve(filteredFile);
         final Path inputPath = tmp.resolve(inputFile);
         Resources.copy(Resources.getResource(inputFile.toString()), new FileOutputStream(inputPath.toFile()));
-        final HProfFilter filter = new HProfFilter(inputPath, Optional.empty(), Optional.of(0));
-        filter.run();
+        final HProfFilter filter = new HProfFilter();
+        filter.run(inputPath, Optional.empty(), Optional.of(0));
 
         final List<String> reference = Files.readAllLines(inputPath, Charsets.UTF_8);
 
@@ -169,8 +174,8 @@ public class HProfFilterTest {
         final Path filteredPath = tmp.resolve(filteredFile);
         final Path inputPath = tmp.resolve(inputFile);
         Resources.copy(Resources.getResource(inputFile.toString()), new FileOutputStream(inputPath.toFile()));
-        final HProfFilter filter = new HProfFilter(inputPath, Optional.empty(), Optional.of(0));
-        filter.run();
+        final HProfFilter filter = new HProfFilter();
+        filter.run(inputPath, Optional.empty(), Optional.of(0));
 
         final List<String> reference = Files.readAllLines(inputPath, Charsets.UTF_8);
 
@@ -180,5 +185,98 @@ public class HProfFilterTest {
         for (int x = 0; x < reference.size(); ++x) {
             Assert.assertEquals("Line " + (x + 1), reference.get(x), lines.get(x));
         }
+    }
+
+    @Test
+    public void testReadAndDiscardBlockEndOfStream() throws IOException {
+        final BufferedReader bufferedReader = Mockito.mock(BufferedReader.class);
+        final Map<Integer, Trace> traces = Maps.newHashMap();
+
+        HProfFilter.readAndDiscardBlock(bufferedReader, traces);
+
+        Mockito.verify(bufferedReader).readLine();
+        Assert.assertTrue(traces.isEmpty());
+    }
+
+    @Test
+    public void testReadAndDiscardBlockSamplesEnd() throws IOException {
+        final BufferedReader bufferedReader = Mockito.mock(BufferedReader.class);
+        final Map<Integer, Trace> traces = Maps.newHashMap();
+
+        Mockito.doReturn("CPU SAMPLES END").when(bufferedReader).readLine();
+
+        HProfFilter.readAndDiscardBlock(bufferedReader, traces);
+
+        Mockito.verify(bufferedReader).readLine();
+        Assert.assertTrue(traces.isEmpty());
+    }
+
+    @Test
+    public void testReadAndDiscardBlockEmptyTrace() throws IOException {
+        final BufferedReader bufferedReader = Mockito.mock(BufferedReader.class);
+        final Map<Integer, Trace> traces = Maps.newHashMap();
+
+        Mockito.when(bufferedReader.readLine())
+                .thenReturn("TRACE 303600:")
+                .thenReturn("CPU SAMPLES END");
+
+        HProfFilter.readAndDiscardBlock(bufferedReader, traces);
+
+        Mockito.verify(bufferedReader, Mockito.times(2)).readLine();
+        Assert.assertEquals(1, traces.size());
+        Assert.assertEquals(new Trace(303600), traces.get(303600));
+    }
+
+    @Test
+    public void testReadAndDiscardBlockNonEmptyTrace() throws IOException {
+        final BufferedReader bufferedReader = Mockito.mock(BufferedReader.class);
+        final Map<Integer, Trace> traces = Maps.newHashMap();
+
+        Mockito.when(bufferedReader.readLine())
+                .thenReturn("TRACE 303600:")
+                .thenReturn("foo bar")
+                .thenReturn("CPU SAMPLES END");
+
+        HProfFilter.readAndDiscardBlock(bufferedReader, traces);
+
+        Mockito.verify(bufferedReader, Mockito.times(3)).readLine();
+        Assert.assertEquals(1, traces.size());
+        Assert.assertEquals(new Trace(303600).addStackLine("foo bar"), traces.get(303600));
+    }
+
+    @Test
+    public void testReadAndDiscardBlockIgnoresCpuSamples() throws IOException {
+        final BufferedReader bufferedReader = Mockito.mock(BufferedReader.class);
+        final Map<Integer, Trace> traces = Maps.newHashMap();
+
+        Mockito.when(bufferedReader.readLine())
+                .thenReturn("TRACE 303600:")
+                .thenReturn("CPU SAMPLES BEGIN")
+                .thenReturn("foo bar")
+                .thenReturn("CPU SAMPLES END");
+
+        HProfFilter.readAndDiscardBlock(bufferedReader, traces);
+
+        Mockito.verify(bufferedReader, Mockito.times(4)).readLine();
+        Assert.assertEquals(1, traces.size());
+        Assert.assertEquals(new Trace(303600), traces.get(303600));
+    }
+
+    @Test
+    public void testReadAndDiscardBlockIgnoresThread() throws IOException {
+        final BufferedReader bufferedReader = Mockito.mock(BufferedReader.class);
+        final Map<Integer, Trace> traces = Maps.newHashMap();
+
+        Mockito.when(bufferedReader.readLine())
+                .thenReturn("TRACE 303600:")
+                .thenReturn("THREAD")
+                .thenReturn("foo bar")
+                .thenReturn("CPU SAMPLES END");
+
+        HProfFilter.readAndDiscardBlock(bufferedReader, traces);
+
+        Mockito.verify(bufferedReader, Mockito.times(4)).readLine();
+        Assert.assertEquals(1, traces.size());
+        Assert.assertEquals(new Trace(303600), traces.get(303600));
     }
 }

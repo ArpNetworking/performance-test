@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2015 Groupon.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,19 +27,31 @@ import java.nio.file.Paths;
 import java.util.function.Function;
 
 /**
- * Sample performance test. This test "compares" the performance of reflective instantiation with
- * <code>newInstance</code> versus direct construction invocation. This produces an independent
- * row of performance data in the output file for each test. Each row is an independent performance
- * series.
+ * Sample performance test. This test "compares" the performance of reflective
+ * instantiation with {@code newInstance} versus direct construction
+ * invocation. This produces an independent row of performance data in the
+ * output file for each test. Each row is an independent performance series.
  *
- * If you enable the profiler it will generate a single profile for all tests in this class. If the tests
- * represent different use cases of the same code this may be acceptable. However, if the tests are for
- * comparative purposes (as they are here) it is strongly recommended that different test classes be used.
+ * If you enable the profiler it will generate a profile for each test method
+ * in this class. The {@code prepareClass} call in {@code @BeforeClass} ensures
+ * that test framework overhead does not skew the profile results. However,
+ * be aware that test fixture setup time will not be excluded (e.g. constructor
+ * execution and {@code @Before} execution). Therefore, you should initialize
+ * any test fixtures prior to {@code prepareClass}; however, that call must be
+ * in {@code @BeforeClass} due to design constraints of junitbenchmarks.
  *
  * @author Ville Koskela (vkoskela at groupon dot com)
  */
-@BenchmarkOptions(callgc = true, benchmarkRounds = 10, warmupRounds = 5)
-public class SamplePerformanceTest {
+@BenchmarkOptions(callgc = true, benchmarkRounds = 500, warmupRounds = 50)
+public final class SampleTestPerf {
+
+    @Rule
+    public final TestRule _benchMarkRule = new BenchmarkRule(JSON_BENCHMARK_CONSUMER);
+
+    private static final JsonBenchmarkConsumer JSON_BENCHMARK_CONSUMER = new JsonBenchmarkConsumer(
+            Paths.get("target/perf/sample-performance-test.json"));
+
+    private static final long ITERATIONS = 10000L;
 
     @BeforeClass
     public static void setUp() {
@@ -53,10 +65,10 @@ public class SamplePerformanceTest {
                 aVoid -> {
                     try {
                         new TestClass();
-                        // CHECKSTYLE.OFF: IllegalCatch - Catch any exception
-                    } catch (final Exception e) {
+                        // CHECKSTYLE.OFF: IllegalCatch - We don't want to leak these.
+                    } catch (final RuntimeException e) {
                         // CHECKSTYLE.ON: IllegalCatch
-                        Assert.fail("Reflective construction failed");
+                        Assert.fail("Constructor construction failed");
                     }
                     return null;
                 },
@@ -70,8 +82,8 @@ public class SamplePerformanceTest {
                 aVoid -> {
                     try {
                         TestClass.class.newInstance();
-                        // CHECKSTYLE.OFF: IllegalCatch - Catch any exception
-                    } catch (final Exception e) {
+                        // CHECKSTYLE.OFF: IllegalCatch - We don't want to leak these.
+                    } catch (final IllegalAccessException | InstantiationException | RuntimeException e) {
                         // CHECKSTYLE.ON: IllegalCatch
                         Assert.fail("Reflective construction failed");
                     }
@@ -85,14 +97,6 @@ public class SamplePerformanceTest {
             method.apply(null);
         }
     }
-
-    @Rule
-    public final TestRule _benchMarkRule = new BenchmarkRule(JSON_BENCHMARK_CONSUMER);
-
-    private static final JsonBenchmarkConsumer JSON_BENCHMARK_CONSUMER = new JsonBenchmarkConsumer(
-            Paths.get("target/site/perf/sample-performance-test.json"));
-
-    private static final long ITERATIONS = 10000L;
 
     private static final class TestClass {
 
