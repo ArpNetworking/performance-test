@@ -116,7 +116,11 @@ public class DockerJsonBenchmarkConsumer extends JsonBenchmarkConsumer {
         }
 
         // Execute filtering using buffered reader and writer
-        final BufferedReader reader = new ContainerFileReader(_dockerClient, container.get(), pathIn);
+        final BufferedReader reader = new BufferedReader(
+                new ContainerFileReader(
+                        _dockerClient,
+                        container.get(),
+                        pathIn));
         try (BufferedWriter writer = Files.newBufferedWriter(pathOut, Charsets.UTF_8)) {
             new HProfFilter().run(reader, writer, index);
         } finally {
@@ -166,10 +170,19 @@ public class DockerJsonBenchmarkConsumer extends JsonBenchmarkConsumer {
         long fileSize = 0;
         BufferedReader reader = null;
         try {
-            reader = new ContainerFileReader(_dockerClient, container.get(), file);
-            while (reader.read() >= 0) {
-                ++fileSize;
-            }
+            reader = new BufferedReader(
+                    new ContainerFileReader(
+                            _dockerClient,
+                            container.get(),
+                            file));
+            final char[] buffer = new char[4096];
+            int bytesRead;
+            do {
+                bytesRead = reader.read(buffer, 0, 4096);
+                if (bytesRead > 0) {
+                    fileSize += bytesRead;
+                }
+            } while (bytesRead >= 0);
         } finally {
             try {
                 if (reader != null) {

@@ -71,7 +71,7 @@ public final class ContainerFileReaderTest {
         Mockito.doReturn("123").when(_container).id();
         Mockito.doReturn(inputStream).when(_dockerClient).archiveContainer("123", file.toString());
 
-        try (BufferedReader reader = new ContainerFileReader(_dockerClient, _container, file)) {
+        try (BufferedReader reader = new BufferedReader(new ContainerFileReader(_dockerClient, _container, file))) {
             Assert.assertEquals("file contents", reader.readLine());
         }
     }

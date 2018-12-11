@@ -22,11 +22,9 @@ import com.spotify.docker.client.messages.Container;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.nio.file.Path;
 import javax.annotation.Nullable;
 
@@ -35,7 +33,7 @@ import javax.annotation.Nullable;
  *
  * @author Ville Koskela (ville dot koskela at inscopemetrics dot com)
  */
-class ContainerFileReader extends BufferedReader {
+class ContainerFileReader extends InputStreamReader {
 
     /**
      * Public constructor.
@@ -49,10 +47,10 @@ class ContainerFileReader extends BufferedReader {
             final DockerClient dockerClient,
             final Container container,
             final Path file) throws IOException {
-        super(createReader(dockerClient, container, file));
+        super(createReader(dockerClient, container, file), Charsets.UTF_8);
     }
 
-    private static Reader createReader(
+    private static InputStream createReader(
             final DockerClient dockerClient,
             final Container container,
             final Path file) throws IOException {
@@ -77,6 +75,6 @@ class ContainerFileReader extends BufferedReader {
                             "Docker client return unsupported archive for: %s",
                             file));
         }
-        return new InputStreamReader(tarInputStream, Charsets.UTF_8);
+        return tarInputStream;
     }
 }
