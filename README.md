@@ -66,27 +66,29 @@ The Maven Central repository is included by default.
 
 ### Test Definition
 
-First, create a test class with a new relevant suffix (e.g. "PT.java" or "PerformanceTest.java") and annotate the test class with BenchmarkOptions:
+First, create a test class with a new relevant suffix; we recommend "TestPerf.java" for unit performance tests or
+"ITPerf.java" for integration performance tests. Next, annotate the test class with `@BenchmarkOptions`:
 
 ```java
 @BenchmarkOptions(callgc = true, benchmarkRounds = 10, warmupRounds = 5)
 ```
 
-Then, define a __static__ JsonBenchmarkConsumer and __non-static__ TestRule. The specified path in the consumer declaration is for the JSON test results file. For example:
+Then, define a __static__ JsonBenchmarkConsumer and __non-static__ TestRule. The specified path in the consumer
+declaration is for the JSON test results file. For example:
 
 ```java
 private static final JsonBenchmarkConsumer JSON_BENCHMARK_CONSUMER = new JsonBenchmarkConsumer(
-        Paths.get("target/site/perf/sample-performance-test.json"));
+        Paths.get("target/perf/sample-performance-test.json"));
 @Rule
 public final TestRule _benchMarkRule = new BenchmarkRule(JSON_BENCHMARK_CONSUMER);
 ```
 
-Next, in your pom.xml file define a profile for executing your performance tests:
+Next, in your pom.xml file define a profile for executing your unit performance tests:
 
 ```xml
 <profiles>
   <profile>
-    <id>performanceTest</id>
+    <id>unitPerformanceTest</id>
     <activation>
       <activeByDefault>false</activeByDefault>
     </activation>
@@ -98,14 +100,9 @@ Next, in your pom.xml file define a profile for executing your performance tests
           <executions>
             <execution>
               <id>default-test</id>
-              <phase>test</phase>
-              <goals>
-                <goal>test</goal>
-              </goals>
               <configuration>
                 <includes>
-                  <include>**/*PerformanceTest.java</include>
-                  <include>**/*PT.java</include>
+                  <include>**/*TestPerf.java</include>
                 </includes>
                 <parallel combine.self="override" />
               </configuration>
@@ -125,12 +122,13 @@ The key points in the profile are:
 
 Finally, define your test methods and execute:
 
-    > mvn -PperformanceTest test
+    > mvn -PunitPerformanceTest test
 
-The results are written out as JSON to the file specified in the consumer. Note that each test method has its own object inside the array.
+The results for each test are written out as JSON to the file specified in the consumer. Note that each test method has
+its own object inside the array.
 
 ```json
-[{"result":{"benchmarkRounds":10,"warmupRounds":5,"warmupTime":842,"benchmarkTime":1690,"roundAverage":{"avg":0.15380000000000002,"stddev":0.005211525688317791},"blockedAverage":{"avg":0.0,"stddev":0.0},"gcAverage":{"avg":0.0175,"stddev":0.001284523257866504},"gcInfo":{"accumulatedInvocations":96,"accumulatedTime":422},"threadCount":1,"shortTestClassName":"SampleParameterizedPerformanceTest","testClass":"com.arpnetworking.test.junitbenchmarks.SampleParameterizedPerformanceTest","testMethod":null,"testClassName":"com.arpnetworking.test.junitbenchmarks.SampleParameterizedPerformanceTest","testMethodName":"test[constructor]"},"profileFile":null},{"result":{"benchmarkRounds":10,"warmupRounds":5,"warmupTime":2127,"benchmarkTime":4093,"roundAverage":{"avg":0.3942,"stddev":0.016987053894069647},"blockedAverage":{"avg":0.0,"stddev":0.0},"gcAverage":{"avg":0.0169,"stddev":7.000000000000472E-4},"gcInfo":{"accumulatedInvocations":36,"accumulatedTime":149},"threadCount":1,"shortTestClassName":"SampleParameterizedPerformanceTest","testClass":"com.arpnetworking.test.junitbenchmarks.SampleParameterizedPerformanceTest","testMethod":null,"testClassName":"com.arpnetworking.test.junitbenchmarks.SampleParameterizedPerformanceTest","testMethodName":"test[new_instance]"},"profileFile":null}]
+[{"result":{"benchmarkRounds":10,"warmupRounds":5,"warmupTime":842,"benchmarkTime":1690,"roundAverage":{"avg":0.15380000000000002,"stddev":0.005211525688317791},"blockedAverage":{"avg":0.0,"stddev":0.0},"gcAverage":{"avg":0.0175,"stddev":0.001284523257866504},"gcInfo":{"accumulatedInvocations":96,"accumulatedTime":422},"threadCount":1,"shortTestClassName":"SampleParameterizedPerformanceTest","testClass":"com.arpnetworking.test.junitbenchmarks.SampleParameterizedTestPerf","testMethod":null,"testClassName":"com.arpnetworking.test.junitbenchmarks.SampleParameterizedTestPerf","testMethodName":"test[constructor]"},"profileFile":null},{"result":{"benchmarkRounds":10,"warmupRounds":5,"warmupTime":2127,"benchmarkTime":4093,"roundAverage":{"avg":0.3942,"stddev":0.016987053894069647},"blockedAverage":{"avg":0.0,"stddev":0.0},"gcAverage":{"avg":0.0169,"stddev":7.000000000000472E-4},"gcInfo":{"accumulatedInvocations":36,"accumulatedTime":149},"threadCount":1,"shortTestClassName":"SampleParameterizedPerformanceTest","testClass":"com.arpnetworking.test.junitbenchmarks.SampleParameterizedTestPerf","testMethod":null,"testClassName":"com.arpnetworking.test.junitbenchmarks.SampleParameterizedTestPerf","testMethodName":"test[new_instance]"},"profileFile":null}]
 ```
 
 Additionally, there are two sample performance tests in the test directory for reference:
@@ -140,13 +138,14 @@ Additionally, there are two sample performance tests in the test directory for r
 
 ### Profile Generation
 
-To enable profiling with performance tests first add the following to the surefire plugin configuration in your performance test profile:
+To enable profiling with performance tests first add the following to the surefire plugin configuration in your
+performance test profile:
 
 ```xml
 <forkMode>always</forkMode>
 <forkCount>1</forkCount>
 <reuseForks>false</reuseForks>
-<argLine combine.self="override">-agentlib:hprof=cpu=samples,depth=15,interval=10,force=y,verbose=y,doe=n,file=${basedir}/target/perf.profile.hprof.txt</argLine>
+<argLine combine.self="override">-agentlib:hprof=cpu=samples,depth=20,interval=10,force=y,verbose=y,doe=n,file=${basedir}/target/perf.unit.hprof.txt</argLine>
 ```
 
 The key points in the configuration are:
@@ -158,8 +157,14 @@ The key points in the configuration are:
 * Specify the output file.
 * Overwrite the output file if necessary.
 * Do not dump profiling information on exit.
+* Write the combined profile data to a path that is guaranteed to exist.
 
-Next, we also recommend resetting the cpu profile before each test suite execution by adding the following to each performance test:
+For non-parameterized tests, one profile will be captured per test method invocation.
+
+For parameterized tests, one profile will be captured per argument matrix and test method invocation.
+
+Next, we strongly recommend resetting the cpu profile before each test suite execution by adding the following to each
+performance test class:
 
 ```java
 @BeforeClass
@@ -168,7 +173,17 @@ public static void setUp() {
 }
 ```
 
-This prevents test framework setup cost/time from counting towards the profile of the first test.
+It is important that you perform all fixture initialization before the `prepareClass` call. This prevents test fixture
+initialization cost/time from counting towards the profile of the test. This may require having more test suites
+than you would normally have for unit or integration testing because all fixtures are `static`. The call to
+`prepareClass` must be in `@BeforeClass` due to design constraints from junitbenchmark.
+
+Finally, the profile does not separate warm-up and benchmarking runs of the test. The profile includes cpu sampling
+across all executions of the test. The timing data in the JSON does separate the benchmarking and warmup runs.
+
+The profiling output file for a test will be in the same directory as the test's JSON file as passed to the test's
+`JsonBenchmarkConsumer` instance. Further, the specific profiling file will be referenced in the JSON in a field called
+`profileFile`.
 
 Building
 --------
@@ -178,11 +193,15 @@ Prerequisites:
 
 Building:
 
-    performance-test> ./mvnw verify
+    performance-test> ./jdk-wrapper.sh ./mvnw verify
+
+To execute unit performance tests:
+
+    metrics-aggregator-daemon> ./jdk-wrapper.sh ./mvnw -PunitPerformanceTest test
 
 To use the local version you must first install it locally:
 
-    performance-test> ./mvnw install
+    performance-test> ./jdk-wrapper.sh ./mvnw install
 
 You can determine the version of the local build from the pom file.  Using the local version is intended only for testing or development.
 

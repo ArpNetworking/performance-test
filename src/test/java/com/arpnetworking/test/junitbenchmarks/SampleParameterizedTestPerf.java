@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2015 Groupon.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,10 +44,21 @@ import java.util.function.Function;
  * @author Ville Koskela (vkoskela at groupon dot com)
  */
 @RunWith(Parameterized.class)
-@BenchmarkOptions(callgc = true, benchmarkRounds = 10, warmupRounds = 5)
-public class SampleParameterizedPerformanceTest {
+@BenchmarkOptions(callgc = true, benchmarkRounds = 500, warmupRounds = 50)
+public final class SampleParameterizedTestPerf {
 
-    public SampleParameterizedPerformanceTest(final String name, final Function<Void, Void> method, final Long repetitions) {
+    @Rule
+    public final TestRule _benchMarkRule = new BenchmarkRule(JSON_BENCHMARK_CONSUMER);
+
+    private static final JsonBenchmarkConsumer JSON_BENCHMARK_CONSUMER = new JsonBenchmarkConsumer(
+            Paths.get("target/perf/sample-parameterized-performance-test.json"));
+
+    private static final long ITERATIONS = 10000L;
+
+    private final Function<Void, Void> _method;
+    private final long _repetitions;
+
+    public SampleParameterizedTestPerf(final String name, final Function<Void, Void> method, final Long repetitions) {
         _method = method;
         _repetitions = repetitions;
     }
@@ -59,26 +70,26 @@ public class SampleParameterizedPerformanceTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Object[]> createParameters() {
-        final List<Object> methodA = Arrays.<Object>asList(
+        final List<Object> methodA = Arrays.asList(
                 "constructor",
                 (Function<Void, Void>) input -> {
                     try {
                         new TestClass();
-                        // CHECKSTYLE.OFF: IllegalCatch - Catch any exception
-                    } catch (final Exception e) {
+                        // CHECKSTYLE.OFF: IllegalCatch - We don't want to leak these.
+                    } catch (final RuntimeException e) {
                         // CHECKSTYLE.ON: IllegalCatch
                         Assert.fail("Reflective construction failed");
                     }
                     return null;
                 },
                 ITERATIONS);
-        final List<Object> methodB = Arrays.<Object>asList(
+        final List<Object> methodB = Arrays.asList(
                 "new_instance",
                 (Function<Void, Void>) input -> {
                     try {
                         TestClass.class.newInstance();
-                        // CHECKSTYLE.OFF: IllegalCatch - Catch any exception
-                    } catch (final Exception e) {
+                        // CHECKSTYLE.OFF: IllegalCatch - We don't want to leak these.
+                    } catch (final IllegalAccessException | InstantiationException | RuntimeException e) {
                         // CHECKSTYLE.ON: IllegalCatch
                         Assert.fail("Reflective construction failed");
                     }
@@ -97,17 +108,6 @@ public class SampleParameterizedPerformanceTest {
             _method.apply(null);
         }
     }
-
-    private final Function<Void, Void> _method;
-    private final long _repetitions;
-
-    @Rule
-    public final TestRule _benchMarkRule = new BenchmarkRule(JSON_BENCHMARK_CONSUMER);
-
-    private static final JsonBenchmarkConsumer JSON_BENCHMARK_CONSUMER = new JsonBenchmarkConsumer(
-            Paths.get("target/site/perf/sample-parameterized-performance-test.json"));
-
-    private static final long ITERATIONS = 10000L;
 
     private static final class TestClass {
 
