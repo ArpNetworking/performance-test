@@ -18,7 +18,7 @@
   <parent>
     <groupId>com.arpnetworking.build</groupId>
     <artifactId>arpnetworking-parent-pom</artifactId>
-    <version>1.1.9</version>
+    <version>1.1.10</version>
     <relativePath />
   </parent>
 
@@ -67,15 +67,15 @@
 
   <properties>
     <!--Dependency versions-->
-    <ant.version>1.9.6</ant.version>
-    <arpnetworking.commons.version>1.17.0</arpnetworking.commons.version>
-    <cglib.version>3.2.6</cglib.version>
+    <ant.version>1.10.3</ant.version>
+    <arpnetworking.commons.version>1.18.0</arpnetworking.commons.version>
+    <cglib.version>3.2.10</cglib.version>
     <commons.compress.version>1.18</commons.compress.version>
     <docker.client.version>8.14.5</docker.client.version>
     <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
     <guava.version>25.1-jre</guava.version>
-    <hamcrest.version>2.0.0.0</hamcrest.version>
-    <jackson.version>2.9.6</jackson.version>
+    <hamcrest.version>2.1</hamcrest.version>
+    <jackson.version>2.9.8</jackson.version>
     <jsr305.version>3.0.2</jsr305.version>
     <junit.version>4.12</junit.version>
     <junit.benchmarks.version>0.7.2</junit.benchmarks.version>
@@ -161,6 +161,58 @@
       <artifactId>docker-client</artifactId>
       <classifier>shaded</classifier>
       <version>${docker.client.version}</version>
+      <exclusions>
+        <!-- TODO(ville): Docker client has an old version of SLF4J
+            https://github.com/spotify/docker-client/pull/1130
+        -->
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+        <!-- TODO(ville): Docker client does not shade correctly
+            https://github.com/spotify/docker-client/issues/1012
+        -->
+        <exclusion>
+          <groupId>com.fasterxml.jackson.jaxrs</groupId>
+          <artifactId>jackson-jaxrs-json-provider</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.datatype</groupId>
+          <artifactId>jackson-datatype-guava</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.glassfish.jersey.core</groupId>
+          <artifactId>jersey-client</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.glassfish.jersey.connectors</groupId>
+          <artifactId>jersey-apache-connector</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.glassfish.jersey.media</groupId>
+          <artifactId>jersey-media-json-jackson</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.github.jnr</groupId>
+          <artifactId>jnr-unixsocket</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpcore</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -199,10 +251,19 @@
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
       <scope>test</scope>
+      <exclusions>
+        <!-- TODO(ville): Remove once JUnit depends on modern hamcrest; see:
+            http://hamcrest.org/JavaHamcrest/distributables
+        -->
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
-      <artifactId>java-hamcrest</artifactId>
+      <artifactId>hamcrest</artifactId>
       <version>${hamcrest.version}</version>
       <scope>test</scope>
     </dependency>
