@@ -5,8 +5,8 @@ Performance Test
     <img src="https://img.shields.io/hexpm/l/plug.svg"
          alt="License: Apache 2">
 </a>
-<a href="https://travis-ci.org/ArpNetworking/performance-test/">
-    <img src="https://travis-ci.org/ArpNetworking/performance-test.png?branch=master"
+<a href="https://travis-ci.com/ArpNetworking/performance-test">
+    <img src="https://travis-ci.com/ArpNetworking/performance-test.svg?branch=master"
          alt="Travis Build">
 </a>
 <a href="http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.arpnetworking.test%22%20a%3A%22performance-test%22">
