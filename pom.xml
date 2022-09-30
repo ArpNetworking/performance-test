@@ -75,7 +75,7 @@
     <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
     <guava.version>29.0-jre</guava.version>
     <hamcrest.version>2.1</hamcrest.version>
-    <jackson.version>2.9.8</jackson.version>
+    <jackson.version>2.13.4</jackson.version>
     <jsr305.version>3.0.2</jsr305.version>
     <junit.version>4.12</junit.version>
     <junit.benchmarks.version>0.7.2</junit.benchmarks.version>
