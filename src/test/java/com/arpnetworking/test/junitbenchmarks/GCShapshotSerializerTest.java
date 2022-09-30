@@ -21,6 +21,7 @@ import com.carrotsearch.junitbenchmarks.GCSnapshot;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -43,7 +44,7 @@ public final class GCShapshotSerializerTest {
 
         final JsonNode jsonNode = mapper.valueToTree(testSnapshot);
         Assert.assertTrue(jsonNode.isObject());
-        Assert.assertThat(jsonNode.get("accumulatedInvocations").asLong(), Matchers.greaterThanOrEqualTo(0L));
-        Assert.assertThat(jsonNode.get("accumulatedTime").asLong(), Matchers.greaterThanOrEqualTo(0L));
+        MatcherAssert.assertThat(jsonNode.get("accumulatedInvocations").asLong(), Matchers.greaterThanOrEqualTo(0L));
+        MatcherAssert.assertThat(jsonNode.get("accumulatedTime").asLong(), Matchers.greaterThanOrEqualTo(0L));
     }
 }
