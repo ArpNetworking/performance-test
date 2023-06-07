@@ -69,7 +69,7 @@
     <!--Dependency versions-->
     <ant.version>1.10.11</ant.version>
     <arpnetworking.commons.version>1.18.0</arpnetworking.commons.version>
-    <cglib.version>3.2.10</cglib.version>
+    <cglib.version>3.3.0</cglib.version>
     <commons.compress.version>1.21</commons.compress.version>
     <docker.client.version>8.16.0</docker.client.version>
     <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
