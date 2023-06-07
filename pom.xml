@@ -71,7 +71,7 @@
     <arpnetworking.commons.version>1.18.0</arpnetworking.commons.version>
     <cglib.version>3.2.10</cglib.version>
     <commons.compress.version>1.21</commons.compress.version>
-    <docker.client.version>8.14.5</docker.client.version>
+    <docker.client.version>8.16.0</docker.client.version>
     <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
     <guava.version>29.0-jre</guava.version>
     <jackson.version>2.13.4</jackson.version>
