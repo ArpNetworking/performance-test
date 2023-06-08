@@ -23,6 +23,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
 import java.util.function.Function;
 
@@ -81,9 +82,10 @@ public final class SampleTestPerf {
                 "new_instance",
                 aVoid -> {
                     try {
-                        TestClass.class.newInstance();
+                        TestClass.class.getDeclaredConstructor().newInstance();
                         // CHECKSTYLE.OFF: IllegalCatch - We don't want to leak these.
-                    } catch (final IllegalAccessException | InstantiationException | RuntimeException e) {
+                    } catch (final IllegalAccessException | InstantiationException | RuntimeException |
+                                   NoSuchMethodException | InvocationTargetException e) {
                         // CHECKSTYLE.ON: IllegalCatch
                         Assert.fail("Reflective construction failed");
                     }

@@ -25,6 +25,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
@@ -87,11 +88,13 @@ public final class SampleParameterizedTestPerf {
                 "new_instance",
                 (Function<Void, Void>) input -> {
                     try {
-                        TestClass.class.newInstance();
+                        TestClass.class.getDeclaredConstructor().newInstance();
                         // CHECKSTYLE.OFF: IllegalCatch - We don't want to leak these.
                     } catch (final IllegalAccessException | InstantiationException | RuntimeException e) {
                         // CHECKSTYLE.ON: IllegalCatch
                         Assert.fail("Reflective construction failed");
+                    } catch (final InvocationTargetException | NoSuchMethodException e) {
+                        throw new RuntimeException(e);
                     }
                     return null;
                 },
