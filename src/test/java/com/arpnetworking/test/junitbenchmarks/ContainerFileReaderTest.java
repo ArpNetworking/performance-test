@@ -22,6 +22,7 @@ import com.spotify.docker.client.messages.Container;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarOutputStream;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,10 +50,16 @@ public final class ContainerFileReaderTest {
     private DockerClient _dockerClient;
     @Mock
     private Container _container;
+    private AutoCloseable _mocks;
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        _mocks = MockitoAnnotations.openMocks(this);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        _mocks.close();
     }
 
     @Test
@@ -116,7 +123,7 @@ public final class ContainerFileReaderTest {
     }
 
     @Test
-    public void testGetContainerFileReaderFailure() throws DockerException, InterruptedException, IOException {
+    public void testGetContainerFileReaderFailure() throws DockerException, InterruptedException {
         final Path file = Paths.get("/var/tmp/foo");
         Mockito.doReturn("123").when(_container).id();
         Mockito.doThrow(new DockerException("fail")).when(_dockerClient).archiveContainer("123", file.toString());

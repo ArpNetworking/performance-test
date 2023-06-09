@@ -148,7 +148,7 @@ public final class JsonBenchmarkConsumerTest {
     }
 
     @Test
-    public void testWriteInvalidFile() {
+    public void testWriteInvalidFile() throws IOException {
         final Path path = Paths.get("target/tmp/test/does_not_exist");
         final JsonBenchmarkConsumer consumer = new JsonBenchmarkConsumer(path);
 

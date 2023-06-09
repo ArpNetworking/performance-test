@@ -25,6 +25,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,7 +34,7 @@ import java.util.function.Function;
 
 /**
  * Sample parameterized performance test. This test "compares" the performance of reflective instantiation with
- * <code>newInstance</code> versus direct construction invocation.  This produces an independent
+ * {@link java.lang.reflect.Constructor#newInstance} versus direct construction invocation.  This produces an independent
  * row of performance data in the output file for each parameterization of each test. Each row is an independent
  * performance series.
  *
@@ -87,11 +88,13 @@ public final class SampleParameterizedTestPerf {
                 "new_instance",
                 (Function<Void, Void>) input -> {
                     try {
-                        TestClass.class.newInstance();
+                        TestClass.class.getDeclaredConstructor().newInstance();
                         // CHECKSTYLE.OFF: IllegalCatch - We don't want to leak these.
                     } catch (final IllegalAccessException | InstantiationException | RuntimeException e) {
                         // CHECKSTYLE.ON: IllegalCatch
                         Assert.fail("Reflective construction failed");
+                    } catch (final InvocationTargetException | NoSuchMethodException e) {
+                        throw new RuntimeException(e);
                     }
                     return null;
                 },

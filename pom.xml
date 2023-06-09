@@ -18,7 +18,7 @@
   <parent>
     <groupId>com.arpnetworking.build</groupId>
     <artifactId>arpnetworking-parent-pom</artifactId>
-    <version>1.1.10</version>
+    <version>3.2.2</version>
     <relativePath />
   </parent>
 
@@ -68,11 +68,11 @@
   <properties>
     <!--Dependency versions-->
     <ant.version>1.10.11</ant.version>
-    <arpnetworking.commons.version>1.18.0</arpnetworking.commons.version>
+    <arpnetworking.commons.version>3.0.0</arpnetworking.commons.version>
     <cglib.version>3.3.0</cglib.version>
     <commons.compress.version>1.21</commons.compress.version>
     <docker.client.version>8.16.0</docker.client.version>
-    <findbugs.annotations.version>3.0.1</findbugs.annotations.version>
+    <spotbugs.annotations.version>4.7.3</spotbugs.annotations.version>
     <guava.version>29.0-jre</guava.version>
     <jackson.version>2.15.2</jackson.version>
     <hamcrest.version>2.2</hamcrest.version>
@@ -80,11 +80,11 @@
     <junit.version>4.13.1</junit.version>
     <junit.benchmarks.version>0.7.2</junit.benchmarks.version>
     <logback.version>1.4.7</logback.version>
-    <mockito.version>2.23.4</mockito.version>
+    <mockito.version>5.3.1</mockito.version>
     <slf4j.version>1.7.25</slf4j.version>
 
     <!-- Findbugs -->
-    <findbugs.exclude>${project.basedir}/findbugs.exclude.xml</findbugs.exclude>
+    <spotbugs.exclude>${project.basedir}/findbugs.exclude.xml</spotbugs.exclude>
 
     <!-- Code Coverage -->
     <jacoco.check.line.coverage>0.75</jacoco.check.line.coverage>
@@ -241,9 +241,10 @@
       <version>${jsr305.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>findbugs-annotations</artifactId>
-      <version>${findbugs.annotations.version}</version>
+      <groupId>com.github.spotbugs</groupId>
+      <artifactId>spotbugs-annotations</artifactId>
+      <version>${spotbugs.annotations.version}</version>
+      <scope>provided</scope>
     </dependency>
     <!-- Test - General -->
     <dependency>
@@ -305,7 +306,6 @@
                     <include>**/*TestPerf.java</include>
                   </includes>
                   <parallel combine.self="override" />
-                  <forkMode>always</forkMode>
                   <forkCount>1</forkCount>
                   <reuseForks>false</reuseForks>
                   <argLine combine.self="override">${argLine} -Xms512m -ea -Duser.timezone="UTC" -agentlib:hprof=cpu=samples,depth=20,interval=1,force=y,verbose=y,doe=n,file=${basedir}/target/perf.unit.hprof.txt</argLine>

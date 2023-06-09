@@ -25,6 +25,7 @@ import com.spotify.docker.client.shaded.com.google.common.collect.ImmutableList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarOutputStream;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,10 +57,16 @@ public final class DockerJsonBenchmarkConsumerTest {
     private ContainerInfo _containerInfo;
     @Mock
     private ContainerConfig _containerConfig;
+    private AutoCloseable _mocks;
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        _mocks = MockitoAnnotations.openMocks(this);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        _mocks.close();
     }
 
     @Test
@@ -161,8 +168,8 @@ public final class DockerJsonBenchmarkConsumerTest {
         Assert.assertTrue(consumer.getJvmArguments().isEmpty());
         Mockito.verify(_dockerClient).listContainers(Mockito.any());
         Mockito.verify(_dockerClient).inspectContainer("my-id");
-        Mockito.verifyZeroInteractions(_containerInfo);
-        Mockito.verifyZeroInteractions(_containerConfig);
+        Mockito.verifyNoInteractions(_containerInfo);
+        Mockito.verifyNoInteractions(_containerConfig);
     }
 
     @Test

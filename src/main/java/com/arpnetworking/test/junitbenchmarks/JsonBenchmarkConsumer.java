@@ -33,6 +33,7 @@ import java.io.Closeable;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.AnnotatedType;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -64,6 +65,7 @@ public class JsonBenchmarkConsumer extends AutocloseConsumer implements Closeabl
     static {
         final SimpleModule simpleModule = new SimpleModule();
         simpleModule.addSerializer(GCSnapshot.class, new GCSnapshotSerializer());
+        simpleModule.addSerializer(AnnotatedType.class, new AnnotatedTypeSerializer());
         OBJECT_MAPPER.registerModule(simpleModule);
         OBJECT_MAPPER.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
     }
@@ -132,9 +134,9 @@ public class JsonBenchmarkConsumer extends AutocloseConsumer implements Closeabl
     }
 
     @Override
-    public void close() {
+    public void close() throws IOException {
         if (!_closed) {
-            try {
+
                 // Create the output path
                 final Path outputDirectory = _path.getParent();
                 final String nameWithoutExtension = com.google.common.io.Files.getNameWithoutExtension(_path.toString());
@@ -179,10 +181,9 @@ public class JsonBenchmarkConsumer extends AutocloseConsumer implements Closeabl
                 try (FileOutputStream outputStream = new FileOutputStream(_path.toString(), _append)) {
                     objectWriter.writeValue(outputStream, augmentedResults);
                     outputStream.write("\n".getBytes(StandardCharsets.UTF_8));
+                    outputStream.flush();
                 }
-            } catch (final IOException e) {
-                LOGGER.error("Could not write json performance file", e);
-            }
+
             _closed = true;
         } else {
             LOGGER.error("JsonBenchmarkConsumer closed multiple times");
