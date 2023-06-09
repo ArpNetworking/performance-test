@@ -34,7 +34,7 @@ import java.util.function.Function;
 
 /**
  * Sample parameterized performance test. This test "compares" the performance of reflective instantiation with
- * <code>newInstance</code> versus direct construction invocation.  This produces an independent
+ * {@link java.lang.reflect.Constructor#newInstance} versus direct construction invocation.  This produces an independent
  * row of performance data in the output file for each parameterization of each test. Each row is an independent
  * performance series.
  *

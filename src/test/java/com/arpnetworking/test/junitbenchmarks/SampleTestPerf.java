@@ -84,8 +84,11 @@ public final class SampleTestPerf {
                     try {
                         TestClass.class.getDeclaredConstructor().newInstance();
                         // CHECKSTYLE.OFF: IllegalCatch - We don't want to leak these.
-                    } catch (final IllegalAccessException | InstantiationException | RuntimeException |
-                                   NoSuchMethodException | InvocationTargetException e) {
+                    } catch (final IllegalAccessException
+                                   | InstantiationException
+                                   | RuntimeException
+                                   | NoSuchMethodException
+                                   | InvocationTargetException e) {
                         // CHECKSTYLE.ON: IllegalCatch
                         Assert.fail("Reflective construction failed");
                     }
