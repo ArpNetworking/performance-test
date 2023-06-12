@@ -77,7 +77,7 @@
     <jackson.version>2.15.2</jackson.version>
     <hamcrest.version>2.2</hamcrest.version>
     <jsr305.version>3.0.2</jsr305.version>
-    <junit.version>4.13.1</junit.version>
+    <junit.version>4.13.2</junit.version>
     <junit.benchmarks.version>0.7.2</junit.benchmarks.version>
     <logback.version>1.4.7</logback.version>
     <mockito.version>5.3.1</mockito.version>
