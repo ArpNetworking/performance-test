@@ -67,7 +67,7 @@
 
   <properties>
     <!--Dependency versions-->
-    <ant.version>1.10.13</ant.version>
+    <ant.version>1.10.14</ant.version>
     <arpnetworking.commons.version>3.0.0</arpnetworking.commons.version>
     <cglib.version>3.3.0</cglib.version>
     <commons.compress.version>1.23.0</commons.compress.version>
