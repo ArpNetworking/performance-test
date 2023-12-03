@@ -68,7 +68,7 @@ class ContainerFileReader extends InputStreamReader {
 
         // Create a buffered reader of the first file in the tar stream
         final TarArchiveInputStream tarInputStream = new TarArchiveInputStream(fileArchiveStream);
-        @Nullable final TarArchiveEntry tarArchive = tarInputStream.getNextTarEntry();
+        @Nullable final TarArchiveEntry tarArchive = tarInputStream.getNextEntry();
         if (tarArchive == null || !tarArchive.isFile()) {
             throw new IOException(
                     String.format(
