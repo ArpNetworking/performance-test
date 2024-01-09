@@ -225,7 +225,7 @@ public final class HProfFilter {
         return new Trace(traceNumber);
     }
 
-    private static class Samples {
+    private static final class Samples {
 
         private final Splitter _splitter = Splitter.on(" ").omitEmptyStrings().trimResults().limit(6);
         private final List<Sample> _samples = Lists.newArrayList();
