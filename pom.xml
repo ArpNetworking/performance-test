@@ -68,7 +68,7 @@
   <properties>
     <!--Dependency versions-->
     <ant.version>1.10.14</ant.version>
-    <arpnetworking.commons.version>3.0.0</arpnetworking.commons.version>
+    <arpnetworking.commons.version>3.1.0</arpnetworking.commons.version>
     <cglib.version>3.3.0</cglib.version>
     <commons.compress.version>1.25.0</commons.compress.version>
     <docker.client.version>8.16.0</docker.client.version>
