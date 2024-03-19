@@ -100,6 +100,7 @@ public class JsonBenchmarkConsumer extends AutocloseConsumer implements Closeabl
      * @param path {@code Path} of the file to write
      * @param append whether to append to the file or overwrite
      */
+    @SuppressWarnings("this-escape")
     public JsonBenchmarkConsumer(final Path path, final boolean append) {
         _path = path;
         _append = append;
