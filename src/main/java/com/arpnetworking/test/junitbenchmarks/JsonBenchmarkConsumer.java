@@ -70,10 +70,11 @@ public class JsonBenchmarkConsumer extends AutocloseConsumer implements Closeabl
         OBJECT_MAPPER.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
     }
 
+    @SuppressWarnings("this-escape")
     private final Supplier<Optional<Path>> _profileFileSupplier =
             new SingletonSupplier<>(() -> extractProfileFile(getJvmArguments()));
 
-    private final Supplier<Long> _processIdProvier = new SingletonSupplier<>(() -> {
+    private final Supplier<Long> _processIdProvider = new SingletonSupplier<>(() -> {
         final String processName = ManagementFactory.getRuntimeMXBean().getName();
         return Long.valueOf(processName.split("@")[0]);
     });
@@ -340,7 +341,7 @@ public class JsonBenchmarkConsumer extends AutocloseConsumer implements Closeabl
     }
 
     protected long getProcessId() {
-        return _processIdProvier.get();
+        return _processIdProvider.get();
     }
 
     private void ensurePathExists() throws IOException {
