@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,8 +72,7 @@ public class JsonBenchmarkConsumer extends AutocloseConsumer implements Closeabl
     }
 
     @SuppressWarnings("this-escape")
-    private final Supplier<Optional<Path>> _profileFileSupplier =
-            new SingletonSupplier<>(() -> extractProfileFile(getJvmArguments()));
+    private final Supplier<Optional<Path>> _profileFileSupplier = new SingletonSupplier<>(() -> extractProfileFile(getJvmArguments()));
 
     private final Supplier<Long> _processIdProvider = new SingletonSupplier<>(() -> {
         final String processName = ManagementFactory.getRuntimeMXBean().getName();
@@ -91,6 +91,7 @@ public class JsonBenchmarkConsumer extends AutocloseConsumer implements Closeabl
      *
      * @param path {@code Path} of the file to write
      */
+    @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
     public JsonBenchmarkConsumer(final Path path) {
         this(path, false);
     }
@@ -102,6 +103,7 @@ public class JsonBenchmarkConsumer extends AutocloseConsumer implements Closeabl
      * @param append whether to append to the file or overwrite
      */
     @SuppressWarnings("this-escape")
+    @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
     public JsonBenchmarkConsumer(final Path path, final boolean append) {
         _path = path;
         _append = append;
@@ -318,7 +320,7 @@ public class JsonBenchmarkConsumer extends AutocloseConsumer implements Closeabl
      * @param arguments the arguments to search for the profile file
      * @return an {@code Optional} {@code Path} to the profile file
      */
-    protected Optional<Path> extractProfileFile(final List<String> arguments) {
+    protected final Optional<Path> extractProfileFile(final List<String> arguments) {
         for (final String argument : arguments) {
             final Matcher matcher = HPROF_FILE_PATTERN.matcher(argument);
             if (matcher.matches()) {
@@ -350,5 +352,4 @@ public class JsonBenchmarkConsumer extends AutocloseConsumer implements Closeabl
             Files.createDirectories(parent);
         }
     }
-
 }

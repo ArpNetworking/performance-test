@@ -15,31 +15,36 @@
   -->
 <FindBugsFilter>
 
-     <!-- Match all DLS_DEAD_LOCAL_STORE violations. As per FindBugs 
+    <!-- Match all DLS_DEAD_LOCAL_STORE violations. As per FindBugs
          documentation these generate numerous false positives under Sun/Oracle
          compilers. 
          
          http://findbugs.sourceforge.net/bugDescriptions.html#DLS_DEAD_LOCAL_STORE
-     -->
-     <Match>
-         <Bug pattern="DLS_DEAD_LOCAL_STORE" />
-     </Match>
+    -->
+    <Match>
+        <Or>
+            <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+            <Bug pattern="MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR" />
+        </Or>
+    </Match>
      
-     <!-- Match all RV_RETURN_VALUE_IGNORED_BAD_PRACTICE violations on all unit
+    <!-- Match all RV_RETURN_VALUE_IGNORED_BAD_PRACTICE violations on all unit
         test files since Mockito usage can cause this violation when stating
         expectations. 
-     -->
-     <Match>
-         <Or>
+    -->
+    <Match>
+        <Or>
             <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE" />
             <Bug pattern="RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT" />
             <Bug pattern="RR_NOT_CHECKED" />
             <Bug pattern="SR_NOT_CHECKED" />
-         </Or>
-         <Or>
+            <Bug pattern="CT_CONSTRUCTOR_THROW" />
+        </Or>
+        <Or>
             <Class name="~.*\.[^\.]+Test" />
+            <Class name="~.*\.[^\.]+TestPerf" />
             <Class name="~.*\.[^\.]+Test\$.*" />
-         </Or>
-     </Match>
-
+            <Class name="~.*\.[^\.]+TestPerf\$.*" />
+        </Or>
+    </Match>
 </FindBugsFilter>
