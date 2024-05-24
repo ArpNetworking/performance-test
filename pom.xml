@@ -70,7 +70,7 @@
     <ant.version>1.10.14</ant.version>
     <arpnetworking.commons.version>3.1.1</arpnetworking.commons.version>
     <cglib.version>3.3.0</cglib.version>
-    <commons.compress.version>1.26.1</commons.compress.version>
+    <commons.compress.version>1.26.2</commons.compress.version>
     <docker.client.version>8.16.0</docker.client.version>
     <spotbugs.annotations.version>4.8.5</spotbugs.annotations.version>
     <guava.version>33.2.0-jre</guava.version>
