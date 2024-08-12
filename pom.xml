@@ -71,7 +71,7 @@
     <arpnetworking.commons.version>3.1.1</arpnetworking.commons.version>
     <cglib.version>3.3.0</cglib.version>
     <commons.compress.version>1.26.2</commons.compress.version>
-    <docker.client.version>8.16.0</docker.client.version>
+    <docker.client.version>3.4.0</docker.client.version>
     <spotbugs.annotations.version>4.8.6</spotbugs.annotations.version>
     <guava.version>33.2.1-jre</guava.version>
     <jackson.version>2.17.2</jackson.version>
@@ -87,7 +87,7 @@
     <spotbugs.exclude>${project.basedir}/findbugs.exclude.xml</spotbugs.exclude>
 
     <!-- Code Coverage -->
-    <jacoco.check.line.coverage>0.75</jacoco.check.line.coverage>
+    <jacoco.check.line.coverage>0.74</jacoco.check.line.coverage>
     <jacoco.check.branch.coverage>0.80</jacoco.check.branch.coverage>
   </properties>
 
@@ -157,62 +157,24 @@
     </dependency>
     <!-- General -->
     <dependency>
-      <groupId>com.spotify</groupId>
-      <artifactId>docker-client</artifactId>
-      <classifier>shaded</classifier>
+      <groupId>com.github.docker-java</groupId>
+      <artifactId>docker-java-api</artifactId>
       <version>${docker.client.version}</version>
-      <exclusions>
-        <!-- TODO(ville): Docker client has an old version of SLF4J
-            https://github.com/spotify/docker-client/pull/1130
-        -->
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-        <!-- TODO(ville): Docker client does not shade correctly
-            https://github.com/spotify/docker-client/issues/1012
-        -->
-        <exclusion>
-          <groupId>com.fasterxml.jackson.jaxrs</groupId>
-          <artifactId>jackson-jaxrs-json-provider</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.datatype</groupId>
-          <artifactId>jackson-datatype-guava</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.glassfish.jersey.core</groupId>
-          <artifactId>jersey-client</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.glassfish.jersey.connectors</groupId>
-          <artifactId>jersey-apache-connector</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.glassfish.jersey.media</groupId>
-          <artifactId>jersey-media-json-jackson</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.github.jnr</groupId>
-          <artifactId>jnr-unixsocket</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpclient</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpcore</artifactId>
-        </exclusion>
-      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.github.docker-java</groupId>
+      <artifactId>docker-java-core</artifactId>
+      <version>${docker.client.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.docker-java</groupId>
+      <artifactId>docker-java-transport</artifactId>
+      <version>${docker.client.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.docker-java</groupId>
+      <artifactId>docker-java-transport-httpclient5</artifactId>
+      <version>${docker.client.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>

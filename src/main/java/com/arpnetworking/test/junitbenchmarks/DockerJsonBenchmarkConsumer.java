@@ -15,14 +15,16 @@
  */
 package com.arpnetworking.test.junitbenchmarks;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.exception.DockerException;
+import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.core.DefaultDockerClientConfig;
+import com.github.dockerjava.core.DockerClientImpl;
+import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
+import com.github.dockerjava.transport.DockerHttpClient;
 import com.google.common.base.Charsets;
-import com.spotify.docker.client.DefaultDockerClient;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.Container;
-import com.spotify.docker.client.messages.ContainerInfo;
-import com.spotify.docker.client.shaded.com.google.common.collect.ImmutableList;
-import com.spotify.docker.client.shaded.javax.ws.rs.ProcessingException;
+import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,9 +94,18 @@ public class DockerJsonBenchmarkConsumer extends JsonBenchmarkConsumer {
         super(path, append);
         _targetImageName = targetImageName;
 
-        _dockerClient = DefaultDockerClient.builder()
-                .uri(dockerDaemonAddress)
+        final DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
+                .withDockerHost(dockerDaemonAddress)
                 .build();
+
+        final DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
+                .dockerHost(config.getDockerHost())
+                .sslConfig(config.getSSLConfig())
+                .maxConnections(100)
+                .connectionTimeout(Duration.ofSeconds(30))
+                .responseTimeout(Duration.ofSeconds(45))
+                .build();
+        _dockerClient = DockerClientImpl.getInstance(config, httpClient);
     }
 
     DockerJsonBenchmarkConsumer(
@@ -126,7 +137,7 @@ public class DockerJsonBenchmarkConsumer extends JsonBenchmarkConsumer {
         } finally {
             try {
                 reader.close();
-            } catch (final IOException | ProcessingException e) {
+            } catch (final IOException e) {
                 // Ignore spurious close exceptions from Docker Java client streams
             }
         }
@@ -145,8 +156,8 @@ public class DockerJsonBenchmarkConsumer extends JsonBenchmarkConsumer {
             // Signal the container
             final int nextIndex = NEXT_PROFILE_INDEX.getAndIncrement();
             try {
-                _dockerClient.killContainer(container.get().id(), DockerClient.Signal.SIGQUIT);
-            } catch (final DockerException | InterruptedException e) {
+                _dockerClient.killContainerCmd(container.get().getId()).withSignal("QUIT").exec();
+            } catch (final DockerException e) {
                 LOGGER.error("Unable to dump profile data", e);
                 return -1;
             }
@@ -188,7 +199,7 @@ public class DockerJsonBenchmarkConsumer extends JsonBenchmarkConsumer {
                 if (reader != null) {
                     reader.close();
                 }
-            } catch (final IOException | ProcessingException e) {
+            } catch (final IOException e) {
                 // Ignore spurious close exceptions from Docker Java client streams
             }
         }
@@ -206,18 +217,18 @@ public class DockerJsonBenchmarkConsumer extends JsonBenchmarkConsumer {
 
         // Look-up the container arguments
         try {
-            final ContainerInfo containerInfo = _dockerClient.inspectContainer(container.get().id());
-            final ImmutableList<String> args = containerInfo.args();
-            final ImmutableList<String> env = containerInfo.config().env();
+            final InspectContainerResponse containerInfo = _dockerClient.inspectContainerCmd(container.get().getId()).exec();
+            final String[] args = containerInfo.getArgs();
+            final String[] env = containerInfo.getConfig().getEnv();
             return ImmutableList.<String>builder()
-                    .addAll(args)
-                    .addAll(env)
+                    .add(args)
+                    .add(env)
                     .build();
-        } catch (final DockerException | InterruptedException e) {
+        } catch (final DockerException e) {
             LOGGER.error(
                     String.format(
                             "Docker client failed to retrieve container information: %s",
-                            container.get().id()),
+                            container.get().getId()),
                     e);
             return Collections.emptyList();
         }
@@ -227,12 +238,12 @@ public class DockerJsonBenchmarkConsumer extends JsonBenchmarkConsumer {
             final DockerClient dockerClient,
             final Pattern targetImagePattern) {
         try {
-            for (final Container container : dockerClient.listContainers(DockerClient.ListContainersParam.allContainers())) {
-                if ("running".equals(container.state()) && targetImagePattern.matcher(container.image()).matches()) {
+            for (final Container container : dockerClient.listContainersCmd().exec()) {
+                if ("running".equals(container.getState()) && targetImagePattern.matcher(container.getImage()).matches()) {
                     return Optional.of(container);
                 }
             }
-        } catch (final DockerException | InterruptedException e) {
+        } catch (final DockerException e) {
             LOGGER.error("Docker client failed to list containers", e);
         }
         return Optional.empty();
