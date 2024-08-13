@@ -70,7 +70,7 @@
     <ant.version>1.10.14</ant.version>
     <arpnetworking.commons.version>3.1.1</arpnetworking.commons.version>
     <cglib.version>3.3.0</cglib.version>
-    <commons.compress.version>1.26.2</commons.compress.version>
+    <commons.compress.version>1.27.0</commons.compress.version>
     <docker.client.version>3.4.0</docker.client.version>
     <spotbugs.annotations.version>4.8.6</spotbugs.annotations.version>
     <guava.version>33.2.1-jre</guava.version>
@@ -157,6 +157,11 @@
     </dependency>
     <!-- General -->
     <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>${commons.compress.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.github.docker-java</groupId>
       <artifactId>docker-java-api</artifactId>
       <version>${docker.client.version}</version>
@@ -175,11 +180,6 @@
       <groupId>com.github.docker-java</groupId>
       <artifactId>docker-java-transport-httpclient5</artifactId>
       <version>${docker.client.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-compress</artifactId>
-      <version>${commons.compress.version}</version>
     </dependency>
     <dependency>
       <groupId>cglib</groupId>
