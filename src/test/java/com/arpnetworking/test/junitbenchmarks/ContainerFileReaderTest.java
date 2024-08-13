@@ -15,10 +15,11 @@
  */
 package com.arpnetworking.test.junitbenchmarks;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.CopyArchiveFromContainerCmd;
+import com.github.dockerjava.api.exception.DockerException;
+import com.github.dockerjava.api.model.Container;
 import com.google.common.base.Charsets;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.Container;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarOutputStream;
@@ -63,7 +64,7 @@ public final class ContainerFileReaderTest {
     }
 
     @Test
-    public void testGetContainerFileReader() throws DockerException, InterruptedException, IOException {
+    public void testGetContainerFileReader() throws DockerException, IOException {
         final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         final TarOutputStream outputStream = new TarOutputStream(byteArrayOutputStream);
         final TarEntry tarEntry = new TarEntry("/var/tmp/foo");
@@ -75,8 +76,10 @@ public final class ContainerFileReaderTest {
 
         final InputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         final Path file = Paths.get("/var/tmp/foo");
-        Mockito.doReturn("123").when(_container).id();
-        Mockito.doReturn(inputStream).when(_dockerClient).archiveContainer("123", file.toString());
+        Mockito.doReturn("123").when(_container).getId();
+        final CopyArchiveFromContainerCmd cmd = Mockito.mock(CopyArchiveFromContainerCmd.class);
+        Mockito.doReturn(cmd).when(_dockerClient).copyArchiveFromContainerCmd("123", file.toString());
+        Mockito.doReturn(inputStream).when(cmd).exec();
 
         try (BufferedReader reader = new BufferedReader(new ContainerFileReader(_dockerClient, _container, file))) {
             Assert.assertEquals("file contents", reader.readLine());
@@ -93,8 +96,10 @@ public final class ContainerFileReaderTest {
 
         final InputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         final Path file = Paths.get("/var/tmp/");
-        Mockito.doReturn("123").when(_container).id();
-        Mockito.doReturn(inputStream).when(_dockerClient).archiveContainer("123", file.toString());
+        Mockito.doReturn("123").when(_container).getId();
+        final CopyArchiveFromContainerCmd cmd = Mockito.mock(CopyArchiveFromContainerCmd.class);
+        Mockito.doReturn(cmd).when(_dockerClient).copyArchiveFromContainerCmd("123", file.toString());
+        Mockito.doReturn(inputStream).when(cmd).exec();
 
         try {
             new ContainerFileReader(_dockerClient, _container, file);
@@ -108,8 +113,10 @@ public final class ContainerFileReaderTest {
     public void testGetContainerFileReaderNoArchive() throws DockerException, InterruptedException, IOException {
         final InputStream inputStream = Mockito.mock(InputStream.class);
         final Path file = Paths.get("/var/tmp/foo");
-        Mockito.doReturn("123").when(_container).id();
-        Mockito.doReturn(inputStream).when(_dockerClient).archiveContainer("123", file.toString());
+        Mockito.doReturn("123").when(_container).getId();
+        final CopyArchiveFromContainerCmd cmd = Mockito.mock(CopyArchiveFromContainerCmd.class);
+        Mockito.doReturn(cmd).when(_dockerClient).copyArchiveFromContainerCmd("123", file.toString());
+        Mockito.doReturn(inputStream).when(cmd).exec();
         Mockito.doReturn(-1).when(inputStream).read();
         Mockito.doReturn(-1).when(inputStream).read(Mockito.any());
         Mockito.doReturn(-1).when(inputStream).read(Mockito.any(), Mockito.anyInt(), Mockito.anyInt());
@@ -125,8 +132,10 @@ public final class ContainerFileReaderTest {
     @Test
     public void testGetContainerFileReaderFailure() throws DockerException, InterruptedException {
         final Path file = Paths.get("/var/tmp/foo");
-        Mockito.doReturn("123").when(_container).id();
-        Mockito.doThrow(new DockerException("fail")).when(_dockerClient).archiveContainer("123", file.toString());
+        Mockito.doReturn("123").when(_container).getId();
+        final CopyArchiveFromContainerCmd cmd = Mockito.mock(CopyArchiveFromContainerCmd.class);
+        Mockito.doReturn(cmd).when(_dockerClient).copyArchiveFromContainerCmd("123", file.toString());
+        Mockito.doThrow(new DockerException("fail", 500)).when(cmd).exec();
         try {
             new ContainerFileReader(_dockerClient, _container, file);
             Assert.fail("Expected exception not thrown");

@@ -15,10 +15,10 @@
  */
 package com.arpnetworking.test.junitbenchmarks;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.exception.DockerException;
+import com.github.dockerjava.api.model.Container;
 import com.google.common.base.Charsets;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.Container;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 
@@ -57,8 +57,8 @@ class ContainerFileReader extends InputStreamReader {
         // Fetch the file from the container
         final InputStream fileArchiveStream;
         try {
-            fileArchiveStream = dockerClient.archiveContainer(container.id(), file.toString());
-        } catch (final DockerException | InterruptedException e) {
+            fileArchiveStream = dockerClient.copyArchiveFromContainerCmd(container.getId(), file.toString()).exec();
+        } catch (final DockerException e) {
             throw new IOException(
                     String.format(
                             "Docker client failed to archive file from container: %s",

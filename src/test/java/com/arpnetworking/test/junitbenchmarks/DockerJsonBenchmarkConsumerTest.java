@@ -15,13 +15,16 @@
  */
 package com.arpnetworking.test.junitbenchmarks;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.CopyArchiveFromContainerCmd;
+import com.github.dockerjava.api.command.InspectContainerCmd;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.command.ListContainersCmd;
+import com.github.dockerjava.api.exception.DockerException;
+import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.ContainerConfig;
 import com.google.common.base.Charsets;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.Container;
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerInfo;
-import com.spotify.docker.client.shaded.com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarOutputStream;
@@ -54,7 +57,7 @@ public final class DockerJsonBenchmarkConsumerTest {
     @Mock
     private Container _container;
     @Mock
-    private ContainerInfo _containerInfo;
+    private InspectContainerResponse _containerInfo;
     @Mock
     private ContainerConfig _containerConfig;
     private AutoCloseable _mocks;
@@ -71,11 +74,13 @@ public final class DockerJsonBenchmarkConsumerTest {
 
     @Test
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
-    public void testGetFileSize() throws DockerException, InterruptedException, IOException {
-        Mockito.doReturn("running").when(_container).state();
-        Mockito.doReturn("foobar").when(_container).image();
-        Mockito.doReturn("my-id").when(_container).id();
-        Mockito.doReturn(Collections.singletonList(_container)).when(_dockerClient).listContainers(Mockito.any());
+    public void testGetFileSize() throws DockerException, IOException {
+        Mockito.doReturn("running").when(_container).getState();
+        Mockito.doReturn("foobar").when(_container).getImage();
+        Mockito.doReturn("my-id").when(_container).getId();
+        final ListContainersCmd listContainerMock = Mockito.mock(ListContainersCmd.class);
+        Mockito.doReturn(listContainerMock).when(_dockerClient).listContainersCmd();
+        Mockito.doReturn(Collections.singletonList(_container)).when(listContainerMock).exec();
 
         final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         final TarOutputStream outputStream = new TarOutputStream(byteArrayOutputStream);
@@ -87,7 +92,9 @@ public final class DockerJsonBenchmarkConsumerTest {
         outputStream.close();
         final InputStream inputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         final Path file = Paths.get("/var/tmp/foo");
-        Mockito.doReturn(inputStream).when(_dockerClient).archiveContainer("my-id", file.toString());
+        final CopyArchiveFromContainerCmd copyArchiveMock = Mockito.mock(CopyArchiveFromContainerCmd.class);
+        Mockito.doReturn(copyArchiveMock).when(_dockerClient).copyArchiveFromContainerCmd("my-id", file.toString());
+        Mockito.doReturn(inputStream).when(copyArchiveMock).exec();
 
         final DockerJsonBenchmarkConsumer consumer = new DockerJsonBenchmarkConsumer(
                 Paths.get("./target/tmp/testGetFileSize.tmp"),
@@ -99,10 +106,12 @@ public final class DockerJsonBenchmarkConsumerTest {
 
     @Test
     public void testGetFileSizeNoContainer() throws DockerException, InterruptedException {
-        Mockito.doReturn("running").when(_container).state();
-        Mockito.doReturn("foobar").when(_container).image();
-        Mockito.doReturn("my-id").when(_container).id();
-        Mockito.doReturn(Collections.singletonList(_container)).when(_dockerClient).listContainers(Mockito.any());
+        Mockito.doReturn("running").when(_container).getState();
+        Mockito.doReturn("foobar").when(_container).getImage();
+        Mockito.doReturn("my-id").when(_container).getId();
+        final ListContainersCmd listContainerMock = Mockito.mock(ListContainersCmd.class);
+        Mockito.doReturn(listContainerMock).when(_dockerClient).listContainersCmd();
+        Mockito.doReturn(Collections.singletonList(_container)).when(listContainerMock).exec();
 
         final DockerJsonBenchmarkConsumer consumer = new DockerJsonBenchmarkConsumer(
                 Paths.get("./target/tmp/testGetFileSizeNoContainer.tmp"),
@@ -119,14 +128,19 @@ public final class DockerJsonBenchmarkConsumerTest {
 
     @Test
     public void testGetJvmArguments() throws DockerException, InterruptedException {
-        Mockito.doReturn("running").when(_container).state();
-        Mockito.doReturn("foobar").when(_container).image();
-        Mockito.doReturn("my-id").when(_container).id();
-        Mockito.doReturn(Collections.singletonList(_container)).when(_dockerClient).listContainers(Mockito.any());
-        Mockito.doReturn(_containerInfo).when(_dockerClient).inspectContainer("my-id");
-        Mockito.doReturn(ImmutableList.of("jvm-arg")).when(_containerInfo).args();
-        Mockito.doReturn(_containerConfig).when(_containerInfo).config();
-        Mockito.doReturn(ImmutableList.of("env-arg")).when(_containerConfig).env();
+        Mockito.doReturn("running").when(_container).getState();
+        Mockito.doReturn("foobar").when(_container).getImage();
+        Mockito.doReturn("my-id").when(_container).getId();
+        final ListContainersCmd listContainerMock = Mockito.mock(ListContainersCmd.class);
+        Mockito.doReturn(listContainerMock).when(_dockerClient).listContainersCmd();
+        Mockito.doReturn(Collections.singletonList(_container)).when(listContainerMock).exec();
+
+        final InspectContainerCmd inspectContainerMock = Mockito.mock(InspectContainerCmd.class);
+        Mockito.doReturn(inspectContainerMock).when(_dockerClient).inspectContainerCmd("my-id");
+        Mockito.doReturn(_containerInfo).when(inspectContainerMock).exec();
+        Mockito.doReturn(new String[]{"jvm-arg"}).when(_containerInfo).getArgs();
+        Mockito.doReturn(_containerConfig).when(_containerInfo).getConfig();
+        Mockito.doReturn(new String[]{"env-arg"}).when(_containerConfig).getEnv();
 
         final DockerJsonBenchmarkConsumer consumer = new DockerJsonBenchmarkConsumer(
                 Paths.get("./target/tmp/testGetJvmArguments.tmp"),
@@ -140,9 +154,11 @@ public final class DockerJsonBenchmarkConsumerTest {
 
     @Test
     public void testGetJvmArgumentsNoContainer() throws DockerException, InterruptedException {
-        Mockito.doReturn("running").when(_container).state();
-        Mockito.doReturn("foobar").when(_container).image();
-        Mockito.doReturn(Collections.singletonList(_container)).when(_dockerClient).listContainers(Mockito.any());
+        Mockito.doReturn("running").when(_container).getState();
+        Mockito.doReturn("foobar").when(_container).getImage();
+        final ListContainersCmd listContainerMock = Mockito.mock(ListContainersCmd.class);
+        Mockito.doReturn(listContainerMock).when(_dockerClient).listContainersCmd();
+        Mockito.doReturn(Collections.singletonList(_container)).when(listContainerMock).exec();
 
         final DockerJsonBenchmarkConsumer consumer = new DockerJsonBenchmarkConsumer(
                 Paths.get("./target/tmp/testGetJvmArgumentsNoContainer.tmp"),
@@ -154,11 +170,13 @@ public final class DockerJsonBenchmarkConsumerTest {
 
     @Test
     public void testGetJvmArgumentsDockerFailure() throws DockerException, InterruptedException {
-        Mockito.doReturn("running").when(_container).state();
-        Mockito.doReturn("foobar").when(_container).image();
-        Mockito.doReturn("my-id").when(_container).id();
-        Mockito.doReturn(Collections.singletonList(_container)).when(_dockerClient).listContainers(Mockito.any());
-        Mockito.doThrow(new DockerException("Test")).when(_dockerClient).inspectContainer("my-id");
+        Mockito.doReturn("running").when(_container).getState();
+        Mockito.doReturn("foobar").when(_container).getImage();
+        Mockito.doReturn("my-id").when(_container).getId();
+        final ListContainersCmd listContainerMock = Mockito.mock(ListContainersCmd.class);
+        Mockito.doReturn(listContainerMock).when(_dockerClient).listContainersCmd();
+        Mockito.doReturn(Collections.singletonList(_container)).when(listContainerMock).exec();
+        Mockito.doThrow(new DockerException("Test", 500)).when(_dockerClient).inspectContainerCmd("my-id");
 
         final DockerJsonBenchmarkConsumer consumer = new DockerJsonBenchmarkConsumer(
                 Paths.get("./target/tmp/testGetJvmArgumentsDockerFailure.tmp"),
@@ -166,45 +184,55 @@ public final class DockerJsonBenchmarkConsumerTest {
                 _dockerClient);
 
         Assert.assertTrue(consumer.getJvmArguments().isEmpty());
-        Mockito.verify(_dockerClient).listContainers(Mockito.any());
-        Mockito.verify(_dockerClient).inspectContainer("my-id");
+        Mockito.verify(_dockerClient).listContainersCmd();
+        Mockito.verify(_dockerClient).inspectContainerCmd("my-id");
         Mockito.verifyNoInteractions(_containerInfo);
         Mockito.verifyNoInteractions(_containerConfig);
     }
 
     @Test
     public void testGetContainerFound() throws DockerException, InterruptedException {
-        Mockito.doReturn("running").when(_container).state();
-        Mockito.doReturn("foobar").when(_container).image();
-        Mockito.doReturn(Collections.singletonList(_container)).when(_dockerClient).listContainers(Mockito.any());
+        Mockito.doReturn("running").when(_container).getState();
+        Mockito.doReturn("foobar").when(_container).getImage();
+        final ListContainersCmd listContainerMock = Mockito.mock(ListContainersCmd.class);
+        Mockito.doReturn(listContainerMock).when(_dockerClient).listContainersCmd();
+        Mockito.doReturn(Collections.singletonList(_container)).when(listContainerMock).exec();
         Assert.assertTrue(DockerJsonBenchmarkConsumer.getContainer(_dockerClient, Pattern.compile("foo.*")).isPresent());
     }
 
     @Test
     public void testGetContainerNone() throws DockerException, InterruptedException {
-        Mockito.doReturn(Collections.emptyList()).when(_dockerClient).listContainers(Mockito.any());
+        final ListContainersCmd listContainerMock = Mockito.mock(ListContainersCmd.class);
+        Mockito.doReturn(listContainerMock).when(_dockerClient).listContainersCmd();
+        Mockito.doReturn(Collections.singletonList(_container)).when(listContainerMock).exec();
         Assert.assertFalse(DockerJsonBenchmarkConsumer.getContainer(_dockerClient, Pattern.compile(".*")).isPresent());
     }
 
     @Test
     public void testGetContainerNotRunning() throws DockerException, InterruptedException {
-        Mockito.doReturn("stopped").when(_container).state();
-        Mockito.doReturn("image").when(_container).image();
-        Mockito.doReturn(Collections.singletonList(_container)).when(_dockerClient).listContainers(Mockito.any());
+        Mockito.doReturn("stopped").when(_container).getState();
+        Mockito.doReturn("image").when(_container).getImage();
+        final ListContainersCmd listContainerMock = Mockito.mock(ListContainersCmd.class);
+        Mockito.doReturn(listContainerMock).when(_dockerClient).listContainersCmd();
+        Mockito.doReturn(Collections.singletonList(_container)).when(listContainerMock).exec();
         Assert.assertFalse(DockerJsonBenchmarkConsumer.getContainer(_dockerClient, Pattern.compile(".*")).isPresent());
     }
 
     @Test
     public void testGetContainerNotMatched() throws DockerException, InterruptedException {
-        Mockito.doReturn("running").when(_container).state();
-        Mockito.doReturn("image").when(_container).image();
-        Mockito.doReturn(Collections.singletonList(_container)).when(_dockerClient).listContainers(Mockito.any());
+        Mockito.doReturn("running").when(_container).getState();
+        Mockito.doReturn("image").when(_container).getImage();
+        final ListContainersCmd listContainerMock = Mockito.mock(ListContainersCmd.class);
+        Mockito.doReturn(listContainerMock).when(_dockerClient).listContainersCmd();
+        Mockito.doReturn(Collections.singletonList(_container)).when(listContainerMock).exec();
         Assert.assertFalse(DockerJsonBenchmarkConsumer.getContainer(_dockerClient, Pattern.compile("foo.*")).isPresent());
     }
 
     @Test
     public void testGetContainerFailure() throws DockerException, InterruptedException {
-        Mockito.doThrow(new DockerException("fail")).when(_dockerClient).listContainers(Mockito.any());
+        final ListContainersCmd listContainerMock = Mockito.mock(ListContainersCmd.class);
+        Mockito.doReturn(listContainerMock).when(_dockerClient).listContainersCmd();
+        Mockito.doReturn(Collections.singletonList(_container)).when(listContainerMock).exec();
         Assert.assertFalse(DockerJsonBenchmarkConsumer.getContainer(_dockerClient, Pattern.compile(".*")).isPresent());
     }
 }
