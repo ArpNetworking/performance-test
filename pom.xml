@@ -73,7 +73,7 @@
     <commons.compress.version>1.27.1</commons.compress.version>
     <docker.client.version>3.4.2</docker.client.version>
     <spotbugs.annotations.version>4.8.6</spotbugs.annotations.version>
-    <guava.version>33.3.1-jre</guava.version>
+    <guava.version>33.4.5-jre</guava.version>
     <jackson.version>2.17.2</jackson.version>
     <hamcrest.version>3.0</hamcrest.version>
     <jsr305.version>3.0.2</jsr305.version>
