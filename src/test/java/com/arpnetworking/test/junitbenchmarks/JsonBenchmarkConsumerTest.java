@@ -21,13 +21,13 @@ import com.carrotsearch.junitbenchmarks.Result;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Charsets;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -200,13 +200,13 @@ public final class JsonBenchmarkConsumerTest {
     public void testGetFileSize() throws IOException {
         final Path tmpFile = Files.createTempFile("testGetFileSize", ".tmp");
         final String content = "This is the file content";
-        Files.write(tmpFile, content.getBytes(Charsets.UTF_8));
+        Files.write(tmpFile, content.getBytes(StandardCharsets.UTF_8));
 
         final JsonBenchmarkConsumer consumer = new JsonBenchmarkConsumer(
                 Files.createTempFile("testGetFileSize", ".hprof"));
 
         final long fileSize = consumer.getFileSize(tmpFile);
-        Assert.assertEquals(content.getBytes(Charsets.UTF_8).length, fileSize);
+        Assert.assertEquals(content.getBytes(StandardCharsets.UTF_8).length, fileSize);
     }
 
     @Test

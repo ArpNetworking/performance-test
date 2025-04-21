@@ -19,7 +19,6 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CopyArchiveFromContainerCmd;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.Container;
-import com.google.common.base.Charsets;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.tools.tar.TarEntry;
 import org.apache.tools.tar.TarOutputStream;
@@ -36,6 +35,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -68,9 +68,9 @@ public final class ContainerFileReaderTest {
         final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         final TarOutputStream outputStream = new TarOutputStream(byteArrayOutputStream);
         final TarEntry tarEntry = new TarEntry("/var/tmp/foo");
-        tarEntry.setSize("file contents".getBytes(Charsets.UTF_8).length);
+        tarEntry.setSize("file contents".getBytes(StandardCharsets.UTF_8).length);
         outputStream.putNextEntry(tarEntry);
-        outputStream.write("file contents".getBytes(Charsets.UTF_8));
+        outputStream.write("file contents".getBytes(StandardCharsets.UTF_8));
         outputStream.closeEntry();
         outputStream.close();
 
