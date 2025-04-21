@@ -15,7 +15,6 @@
  */
 package com.arpnetworking.test.junitbenchmarks;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -26,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -88,8 +88,8 @@ public final class HProfFilter {
         LOGGER.info(String.format("Result file is %s", actualResult));
 
         try (
-                BufferedReader reader = Files.newBufferedReader(report, Charsets.UTF_8);
-                BufferedWriter writer = Files.newBufferedWriter(actualResult, Charsets.UTF_8)) {
+                BufferedReader reader = Files.newBufferedReader(report, StandardCharsets.UTF_8);
+                BufferedWriter writer = Files.newBufferedWriter(actualResult, StandardCharsets.UTF_8)) {
             run(reader, writer, index.orElse(0));
         }
     }

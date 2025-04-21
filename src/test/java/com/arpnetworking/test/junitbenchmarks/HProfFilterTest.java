@@ -15,7 +15,6 @@
  */
 package com.arpnetworking.test.junitbenchmarks;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 import com.google.common.io.Resources;
 import org.junit.Assert;
@@ -25,6 +24,7 @@ import org.mockito.Mockito;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -56,9 +56,9 @@ public final class HProfFilterTest {
         filter.run(inputPath, Optional.empty(), Optional.of(0));
 
         Resources.copy(Resources.getResource(filteredFile.toString()), new FileOutputStream(referencePath.toFile()));
-        final List<String> reference = Files.readAllLines(referencePath, Charsets.UTF_8);
+        final List<String> reference = Files.readAllLines(referencePath, StandardCharsets.UTF_8);
 
-        final List<String> lines = Files.readAllLines(filteredPath, Charsets.UTF_8);
+        final List<String> lines = Files.readAllLines(filteredPath, StandardCharsets.UTF_8);
 
         Assert.assertEquals("Expected same number of lines in files", reference.size(), lines.size());
         for (int x = 0; x < reference.size(); ++x) {
@@ -104,9 +104,9 @@ public final class HProfFilterTest {
         filter.run(inputPath, Optional.empty(), Optional.of(0));
 
         Resources.copy(Resources.getResource(filteredFile.toString()), new FileOutputStream(referencePath.toFile()));
-        final List<String> reference = Files.readAllLines(referencePath, Charsets.UTF_8);
+        final List<String> reference = Files.readAllLines(referencePath, StandardCharsets.UTF_8);
 
-        final List<String> lines = Files.readAllLines(filteredPath, Charsets.UTF_8);
+        final List<String> lines = Files.readAllLines(filteredPath, StandardCharsets.UTF_8);
 
         int x = 0;
         int y = 0;
@@ -147,9 +147,9 @@ public final class HProfFilterTest {
         final HProfFilter filter = new HProfFilter();
         filter.run(inputPath, Optional.empty(), Optional.of(0));
 
-        final List<String> reference = Files.readAllLines(inputPath, Charsets.UTF_8);
+        final List<String> reference = Files.readAllLines(inputPath, StandardCharsets.UTF_8);
 
-        final List<String> lines = Files.readAllLines(filteredPath, Charsets.UTF_8);
+        final List<String> lines = Files.readAllLines(filteredPath, StandardCharsets.UTF_8);
 
         int x = 0;
         int y = 0;
@@ -177,9 +177,9 @@ public final class HProfFilterTest {
         final HProfFilter filter = new HProfFilter();
         filter.run(inputPath, Optional.empty(), Optional.of(0));
 
-        final List<String> reference = Files.readAllLines(inputPath, Charsets.UTF_8);
+        final List<String> reference = Files.readAllLines(inputPath, StandardCharsets.UTF_8);
 
-        final List<String> lines = Files.readAllLines(filteredPath, Charsets.UTF_8);
+        final List<String> lines = Files.readAllLines(filteredPath, StandardCharsets.UTF_8);
 
         Assert.assertEquals("Expected same number of lines in files", reference.size(), lines.size());
         for (int x = 0; x < reference.size(); ++x) {

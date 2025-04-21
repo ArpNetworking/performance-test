@@ -23,7 +23,6 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -132,7 +132,7 @@ public class DockerJsonBenchmarkConsumer extends JsonBenchmarkConsumer {
                         _dockerClient,
                         container.get(),
                         pathIn));
-        try (BufferedWriter writer = Files.newBufferedWriter(pathOut, Charsets.UTF_8)) {
+        try (BufferedWriter writer = Files.newBufferedWriter(pathOut, StandardCharsets.UTF_8)) {
             new HProfFilter().run(reader, writer, index);
         } finally {
             try {

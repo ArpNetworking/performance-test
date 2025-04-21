@@ -18,13 +18,13 @@ package com.arpnetworking.test.junitbenchmarks;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.Container;
-import com.google.common.base.Charsets;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import javax.annotation.Nullable;
 
@@ -47,7 +47,7 @@ class ContainerFileReader extends InputStreamReader {
             final DockerClient dockerClient,
             final Container container,
             final Path file) throws IOException {
-        super(createReader(dockerClient, container, file), Charsets.UTF_8);
+        super(createReader(dockerClient, container, file), StandardCharsets.UTF_8);
     }
 
     private static InputStream createReader(
