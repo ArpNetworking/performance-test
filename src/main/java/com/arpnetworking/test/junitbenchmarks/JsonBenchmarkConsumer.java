@@ -245,7 +245,7 @@ public class JsonBenchmarkConsumer extends AutocloseConsumer implements Closeabl
         // such as Sun's private Signal API did not work.
         final int nextIndex = NEXT_PROFILE_INDEX.getAndIncrement();
         try {
-            Runtime.getRuntime().exec("kill -SIGQUIT " + getProcessId());
+            Runtime.getRuntime().exec(new String[]{"kill", "-SIGQUIT", getProcessId().toString()});
         } catch (final IOException e) {
             LOGGER.error("Unable to dump profile data", e);
         }
@@ -342,7 +342,7 @@ public class JsonBenchmarkConsumer extends AutocloseConsumer implements Closeabl
         return ManagementFactory.getRuntimeMXBean().getInputArguments();
     }
 
-    protected long getProcessId() {
+    protected Long getProcessId() {
         return _processIdProvider.get();
     }
 
