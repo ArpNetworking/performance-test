@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,14 +83,13 @@ public class JsonBenchmarkConsumer extends AutocloseConsumer implements Closeabl
     private final Path _path;
     private final boolean _append;
 
-    private boolean _closed = false;
+    private volatile boolean _closed = false;
 
     /**
      * Public constructor. Overwrites the file by default.
      *
      * @param path {@code Path} of the file to write
      */
-    @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
     public JsonBenchmarkConsumer(final Path path) {
         this(path, false);
     }
@@ -103,7 +101,6 @@ public class JsonBenchmarkConsumer extends AutocloseConsumer implements Closeabl
      * @param append whether to append to the file or overwrite
      */
     @SuppressWarnings("this-escape")
-    @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
     public JsonBenchmarkConsumer(final Path path, final boolean append) {
         _path = path;
         _append = append;

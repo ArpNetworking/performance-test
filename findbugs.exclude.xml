@@ -27,6 +27,13 @@
             <Bug pattern="MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR" />
         </Or>
     </Match>
+    <!-- Match THROWS_METHOD_THROWS_RUNTIMEEXCEPTION violations. We commonly
+        use runtime exceptions with lambdas, streams, and promises to indicate
+        failure
+     -->
+     <Match>
+         <Bug pattern="THROWS_METHOD_THROWS_RUNTIMEEXCEPTION" />
+     </Match>
      
     <!-- Match all RV_RETURN_VALUE_IGNORED_BAD_PRACTICE violations on all unit
         test files since Mockito usage can cause this violation when stating
