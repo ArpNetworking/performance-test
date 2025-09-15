@@ -72,7 +72,7 @@
     <cglib.version>3.3.0</cglib.version>
     <commons.compress.version>1.28.0</commons.compress.version>
     <docker.client.version>3.6.0</docker.client.version>
-    <spotbugs.annotations.version>4.9.4</spotbugs.annotations.version>
+    <spotbugs.annotations.version>4.9.5</spotbugs.annotations.version>
     <guava.version>33.4.8-jre</guava.version>
     <jackson.version>2.20.0</jackson.version>
     <hamcrest.version>3.0</hamcrest.version>
