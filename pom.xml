@@ -74,7 +74,7 @@
     <docker.client.version>3.6.0</docker.client.version>
     <spotbugs.annotations.version>4.9.8</spotbugs.annotations.version>
     <guava.version>33.5.0-jre</guava.version>
-    <jackson.version>2.20.0</jackson.version>
+    <jackson.version>2.20.1</jackson.version>
     <hamcrest.version>3.0</hamcrest.version>
     <jsr305.version>3.0.2</jsr305.version>
     <junit.version>4.13.2</junit.version>
